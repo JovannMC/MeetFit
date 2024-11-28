@@ -14,7 +14,7 @@ export default {
 	plugins: [
 		forms,
 		skeleton({
-			themes: [themes.modern]
+			themes: [themes.catppuccin]
 		})
 	]
 } satisfies Config;
