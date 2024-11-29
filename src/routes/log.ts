@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 enum LogLevel {
 	INFO = 'INFO',
 	WARN = 'WARN',
@@ -28,16 +29,16 @@ function log(level: LogLevel, message: string) {
 	console.log(`%c[${level}]%c ${message}`, style, '');
 }
 
-function info(message: string) {
-	log(LogLevel.INFO, message);
+function info(...args: any[]) {
+	log(LogLevel.INFO, args.join(' '));
 }
 
-function warn(message: string) {
-	log(LogLevel.WARN, message);
+function warn(...args: any[]) {
+	log(LogLevel.WARN, args.join(' '));
 }
 
-function error(message: string) {
-	log(LogLevel.ERROR, message);
+function error(...args: any[]) {
+	log(LogLevel.ERROR, args.join(' '));
 }
 
 export { LogLevel, error, info, log, warn };
