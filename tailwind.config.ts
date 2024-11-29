@@ -8,7 +8,11 @@ export default {
 	content: ['./src/**/*.{html,js,svelte,ts}', contentPath(import.meta.url, 'svelte')],
 
 	theme: {
-		extend: {}
+		extend: {},
+		container: {
+			center: true,
+			padding: '4rem'
+		}
 	},
 
 	plugins: [
