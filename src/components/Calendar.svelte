@@ -92,29 +92,29 @@
 	});
 </script>
 
-<div class="flex flex-col items-center justify-center bg-primary-800">
-	<div class="flex flex-row gap-2">
+<div class="flex flex-col p-6 bg-surface-800 items-center justify-center gap-1">
+	<div class="flex flex-row gap-3">
 		<button>&lt;</button>
 		<h1>{monthNames[month]} {year}</h1>
 		<button>&gt;</button>
 	</div>
 	<div class="flex flex-col gap-1 text-center">
 		<div class="flex flex-row gap-1">
-			<div class="w-10 bg-secondary-700">Mon</div>
-			<div class="w-10 bg-secondary-700">Tue</div>
-			<div class="w-10 bg-secondary-700">Wed</div>
-			<div class="w-10 bg-secondary-700">Thu</div>
-			<div class="w-10 bg-secondary-700">Fri</div>
-			<div class="w-10 bg-secondary-800">Sat</div>
-			<div class="w-10 bg-secondary-800">Sun</div>
+			<div class="w-10 bg-primary-500">Mon</div>
+			<div class="w-10 bg-primary-500">Tue</div>
+			<div class="w-10 bg-primary-500">Wed</div>
+			<div class="w-10 bg-primary-500">Thu</div>
+			<div class="w-10 bg-primary-500">Fri</div>
+			<div class="w-10 bg-primary-800">Sat</div>
+			<div class="w-10 bg-primary-800">Sun</div>
 		</div>
 		<div class="grid grid-cols-7 gap-1">
 			{#each Array(calendar.previousMonth.length).fill(0) as _, i}
 				<div
 					class="h-10 w-10 content-center {calendar.previousMonth[i].name === 'Saturday' ||
 					calendar.previousMonth[i].name === 'Sunday'
-						? 'bg-secondary-700'
-						: 'bg-secondary-600'}"
+						? 'bg-secondary-900'
+						: 'bg-secondary-800'}"
 				>
 					{calendar.previousMonth[i].day}
 				</div>
@@ -133,8 +133,8 @@
 				<div
 					class="h-10 w-10 content-center {calendar.nextMonth[i].name === 'Saturday' ||
 					calendar.nextMonth[i].name === 'Sunday'
-						? 'bg-secondary-700'
-						: 'bg-secondary-600'}"
+						? 'bg-secondary-900'
+						: 'bg-secondary-800'}"
 				>
 					{calendar.nextMonth[i].day}
 				</div>
