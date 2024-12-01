@@ -8,6 +8,9 @@
 	);
 	const currentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+    let startingDay = $state('Monday');
+    let timezone = $state(currentTimezone);
+
 	const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 </script>
 
@@ -17,13 +20,14 @@
 	<!-- Date range -->
 
 	<!-- Time range -->
-	<Dropdown id="startingDay" label="Weekday start:" options={days} selected={days[1]} />
+	<Dropdown id="startingDay" label="Weekday start:" options={days} selected={days[1]} onChange={(day: string) => { startingDay = day; }} />
 
 	<Dropdown
 		id="timezone"
 		label="Time zone:"
 		options={filteredTimezones}
 		selected={currentTimezone}
+        onChange={(tz: string) => { tz = timezone }}
 	/>
-	<Calendar />
+	<Calendar startingDay={startingDay}/>
 </form>
