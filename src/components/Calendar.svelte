@@ -1,30 +1,44 @@
 <script lang="ts">
-	export let startingDay = 'Monday';
+	
+	let { startingDay = 'Monday' } = $props();
 
-	const currentDate = new Date();
-	let month = currentDate.getMonth();
-	let year = currentDate.getFullYear();
+	const date = new Date();
+	let month = $state(date.getMonth()); // Current month (0-11)
+	let year = $state(date.getFullYear()); // Current year
 
-	const daysInMonth = (month: number, year: number) => new Date(year, month, 0).getDate();
+	// Function to calculate days in a given month, adjusting for overflow/underflow
+	const daysInMonth = (month: number, year: number) => {
+		// Wrap months into valid ranges
+		if (month < 0) {
+			month = 11;
+			year -= 1;
+		} else if (month > 11) {
+			month = 0;
+			year += 1;
+		}
+		// Return the number of days in the month
+		return (new Date(year, month + 1, 0).getDate()) + 1;
+	};
 
-	const daysPrevious = daysInMonth(month - 1, year);
-	const daysCurrent = daysInMonth(month, year);
-	const daysNext = daysInMonth(month + 1, year);
+	// Days in current, previous, and next months
+	const daysCurrent = $derived(daysInMonth(month, year));
+	const daysPrevious = $derived(daysInMonth(month - 1, year));
+	const daysNext = $derived(daysInMonth(month + 1, year));
 
-	const daysPreviousObject = Array.from({ length: daysPrevious }, (_, i) => ({
+	const daysPreviousObject = $derived(Array.from({ length: daysPrevious }, (_, i) => ({
 		day: i + 1,
 		name: new Date(year, month - 1, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
-	}));
+	})));
 
-	const daysCurrentObject = Array.from({ length: daysCurrent }, (_, i) => ({
+	const daysCurrentObject = $derived(Array.from({ length: daysCurrent }, (_, i) => ({
 		day: i + 1,
 		name: new Date(year, month, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
-	}));
+	})));
 
-	const daysNextObject = Array.from({ length: daysNext }, (_, i) => ({
+	const daysNextObject = $derived(Array.from({ length: daysNext }, (_, i) => ({
 		day: i + 1,
 		name: new Date(year, month + 1, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
-	}));
+	})));
 
 	const weekdayMap = new Map([
 		['Monday', 0],
@@ -36,7 +50,11 @@
 		['Sunday', 6]
 	]);
 
-	let calendar: { previousMonth: any; currentMonth: any; nextMonth: any };
+	let calendar: { previousMonth: any; currentMonth: any; nextMonth: any } = $state({
+		previousMonth: [],
+		currentMonth: [],
+		nextMonth: []
+	});
 
 	const originalWeekdays = [
 		'Monday',
@@ -47,42 +65,47 @@
 		'Saturday',
 		'Sunday'
 	];
-	$: startDayIndex = weekdayMap.get(startingDay) ?? 0;
-	$: daysInWeek = originalWeekdays
-		.slice(startDayIndex)
-		.concat(originalWeekdays.slice(0, startDayIndex));
 
-	$: weekdays = daysInWeek.slice(0, 5);
-	$: weekend = weekdays.slice(-2);
+	const startDayIndex = $derived(weekdayMap.get(startingDay) ?? 0);
+	const daysInWeek = $derived(
+		originalWeekdays.slice(startDayIndex).concat(originalWeekdays.slice(0, startDayIndex))
+	);
 
-	$: {
+	const weekdays = $derived(daysInWeek.slice(0, 5));
+	const weekend = $derived(weekdays.slice(-2));
+
+	$effect(() => {
 		const firstDayOfWeek = (new Date(year, month, 1).getDay() - startDayIndex + 7) % 7;
 		const lastDayOfWeek = (new Date(year, month, daysCurrent).getDay() - startDayIndex + 7) % 7;
+
+		const adjustMonthYear = (month: number, year: number) => {
+			if (month < 0) return { month: 11, year: year - 1 };
+			if (month > 11) return { month: 0, year: year + 1 };
+			return { month, year };
+		};
 
 		calendar = {
 			previousMonth:
 				firstDayOfWeek !== 0
-					? daysPreviousObject.slice(-firstDayOfWeek).map((day) => ({
-							...day,
-							month: month - 1,
-							year: month === 0 ? year - 1 : year
-						}))
+					? daysPreviousObject.slice(-firstDayOfWeek).map((day) => {
+							const { month: adjMonth, year: adjYear } = adjustMonthYear(month - 1, year);
+							return { ...day, month: adjMonth, year: adjYear };
+						})
 					: [],
 			currentMonth: daysCurrentObject.map((day) => ({
 				...day,
-				month: month,
-				year: year
+				month,
+				year
 			})),
 			nextMonth:
 				lastDayOfWeek !== 6
-					? daysNextObject.slice(0, 6 - lastDayOfWeek).map((day) => ({
-							...day,
-							month: month + 1,
-							year: month === 11 ? year + 1 : year
-						}))
+					? daysNextObject.slice(0, 6 - lastDayOfWeek).map((day) => {
+							const { month: adjMonth, year: adjYear } = adjustMonthYear(month + 1, year);
+							return { ...day, month: adjMonth, year: adjYear };
+						})
 					: []
 		};
-	}
+	});
 
 	const monthNames = [
 		'January',
@@ -99,29 +122,29 @@
 		'December'
 	];
 
-    // Change month logic
-    const changeMonth = (direction: number) => {
-        if (direction === -1) {
-            month -= 1;
-            if (month < 0) {
-                month = 11;
-                year -= 1;
-            }
-        } else {
-            month += 1;
-            if (month > 11) {
-                month = 0;
-                year += 1;
-            }
-        }
-    };
+	// Change month logic
+	const changeMonth = (direction: number) => {
+		if (direction === -1) {
+			month -= 1;
+			if (month < 0) {
+				month = 11;
+				year -= 1;
+			}
+		} else {
+			month += 1;
+			if (month > 11) {
+				month = 0;
+				year += 1;
+			}
+		}
+	};
 </script>
 
 <div class="flex flex-col items-center justify-center gap-1 bg-surface-800 p-6">
 	<div class="flex flex-row gap-3">
-		<button on:click={() => changeMonth(-1)}>&lt;</button>
+		<button onclick={() => changeMonth(-1)}>&lt;</button>
 		<h1>{monthNames[month]} {year}</h1>
-		<button on:click={() => changeMonth(1)}>&gt;</button>
+		<button onclick={() => changeMonth(1)}>&gt;</button>
 	</div>
 	<div class="flex flex-col gap-1 text-center">
 		<div class="flex flex-row gap-1">
