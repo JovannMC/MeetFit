@@ -1,11 +1,11 @@
 <script lang="ts">
 	export let startingDay = 'Monday';
 
-	const date = new Date();
-	const month = date.getMonth();
-	const year = date.getFullYear();
+	const currentDate = new Date();
+	let month = currentDate.getMonth();
+	let year = currentDate.getFullYear();
 
-	const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 1).getDate();
+	const daysInMonth = (month: number, year: number) => new Date(year, month, 0).getDate();
 
 	const daysPrevious = daysInMonth(month - 1, year);
 	const daysCurrent = daysInMonth(month, year);
@@ -98,13 +98,30 @@
 		'November',
 		'December'
 	];
+
+    // Change month logic
+    const changeMonth = (direction: number) => {
+        if (direction === -1) {
+            month -= 1;
+            if (month < 0) {
+                month = 11;
+                year -= 1;
+            }
+        } else {
+            month += 1;
+            if (month > 11) {
+                month = 0;
+                year += 1;
+            }
+        }
+    };
 </script>
 
 <div class="flex flex-col items-center justify-center gap-1 bg-surface-800 p-6">
 	<div class="flex flex-row gap-3">
-		<button>&lt;</button>
+		<button on:click={() => changeMonth(-1)}>&lt;</button>
 		<h1>{monthNames[month]} {year}</h1>
-		<button>&gt;</button>
+		<button on:click={() => changeMonth(1)}>&gt;</button>
 	</div>
 	<div class="flex flex-col gap-1 text-center">
 		<div class="flex flex-row gap-1">
