@@ -1,6 +1,7 @@
 <script lang="ts">
-	import Calendar from '../components/Calendar.svelte';
-	import Dropdown from '../components/Dropdown.svelte';
+	import { days } from '$lib/common';
+	import Calendar from '$lib/components/Calendar.svelte';
+	import Dropdown from '$lib/components/Dropdown.svelte';
 
 	const timezones = Intl.supportedValuesOf('timeZone');
 	const filteredTimezones = timezones.filter(
@@ -10,8 +11,6 @@
 
 	let startingDay = $state('Monday');
 	let timezone = $state(currentTimezone);
-
-	const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 </script>
 
 <form id="create">

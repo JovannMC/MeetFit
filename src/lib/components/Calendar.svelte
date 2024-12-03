@@ -1,14 +1,13 @@
 <script lang="ts">
-	
+	import { days, months } from '$lib/common';
 	let { startingDay = 'Monday' } = $props();
 
+	// Date logic
 	const date = new Date();
-	let month = $state(date.getMonth()); // Current month (0-11)
-	let year = $state(date.getFullYear()); // Current year
+	let month = $state(date.getMonth());
+	let year = $state(date.getFullYear());
 
-	// Function to calculate days in a given month, adjusting for overflow/underflow
 	const daysInMonth = (month: number, year: number) => {
-		// Wrap months into valid ranges
 		if (month < 0) {
 			month = 11;
 			year -= 1;
@@ -16,60 +15,45 @@
 			month = 0;
 			year += 1;
 		}
-		// Return the number of days in the month
-		return (new Date(year, month + 1, 0).getDate()) + 1;
+		return new Date(year, month + 1, 0).getDate() + 1;
 	};
 
-	// Days in current, previous, and next months
-	const daysCurrent = $derived(daysInMonth(month, year));
+	// Days for the previous, current, and next month
 	const daysPrevious = $derived(daysInMonth(month - 1, year));
+	const daysCurrent = $derived(daysInMonth(month, year));
 	const daysNext = $derived(daysInMonth(month + 1, year));
 
-	const daysPreviousObject = $derived(Array.from({ length: daysPrevious }, (_, i) => ({
-		day: i + 1,
-		name: new Date(year, month - 1, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
-	})));
+	const daysPreviousObject = $derived(
+		Array.from({ length: daysPrevious }, (_, i) => ({
+			day: i + 1,
+			name: new Date(year, month - 1, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
+		}))
+	);
 
-	const daysCurrentObject = $derived(Array.from({ length: daysCurrent }, (_, i) => ({
-		day: i + 1,
-		name: new Date(year, month, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
-	})));
+	const daysCurrentObject = $derived(
+		Array.from({ length: daysCurrent }, (_, i) => ({
+			day: i + 1,
+			name: new Date(year, month, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
+		}))
+	);
 
-	const daysNextObject = $derived(Array.from({ length: daysNext }, (_, i) => ({
-		day: i + 1,
-		name: new Date(year, month + 1, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
-	})));
+	const daysNextObject = $derived(
+		Array.from({ length: daysNext }, (_, i) => ({
+			day: i + 1,
+			name: new Date(year, month + 1, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
+		}))
+	);
 
-	const weekdayMap = new Map([
-		['Monday', 0],
-		['Tuesday', 1],
-		['Wednesday', 2],
-		['Thursday', 3],
-		['Friday', 4],
-		['Saturday', 5],
-		['Sunday', 6]
-	]);
-
+	// Calendar logic
 	let calendar: { previousMonth: any; currentMonth: any; nextMonth: any } = $state({
 		previousMonth: [],
 		currentMonth: [],
 		nextMonth: []
 	});
 
-	const originalWeekdays = [
-		'Monday',
-		'Tuesday',
-		'Wednesday',
-		'Thursday',
-		'Friday',
-		'Saturday',
-		'Sunday'
-	];
-
+	const weekdayMap = new Map(days.map((day, index) => [day, index]));
 	const startDayIndex = $derived(weekdayMap.get(startingDay) ?? 0);
-	const daysInWeek = $derived(
-		originalWeekdays.slice(startDayIndex).concat(originalWeekdays.slice(0, startDayIndex))
-	);
+	const daysInWeek = $derived(days.slice(startDayIndex).concat(days.slice(0, startDayIndex)));
 
 	const weekdays = $derived(daysInWeek.slice(0, 5));
 	const weekend = $derived(daysInWeek.slice(-2));
@@ -107,22 +91,6 @@
 		};
 	});
 
-	const monthNames = [
-		'January',
-		'February',
-		'March',
-		'April',
-		'May',
-		'June',
-		'July',
-		'August',
-		'September',
-		'October',
-		'November',
-		'December'
-	];
-
-	// Change month logic
 	const changeMonth = (direction: number) => {
 		if (direction === -1) {
 			month -= 1;
@@ -141,11 +109,15 @@
 </script>
 
 <div class="flex flex-col items-center justify-center gap-4 bg-surface-800 p-6">
-    <div class="flex flex-row gap-3 items-center">
-        <button class="w-6 h-6 bg-primary-500 text-white rounded" onclick={() => changeMonth(-1)}>&lt;</button>
-        <h1 class="w-32 text-center">{monthNames[month]} {year}</h1>
-        <button class="w-6 h-6 bg-primary-500 text-white rounded" onclick={() => changeMonth(1)}>&gt;</button>
-    </div>
+	<div class="flex flex-row items-center gap-3">
+		<button class="h-6 w-6 rounded bg-primary-500 text-white" onclick={() => changeMonth(-1)}
+			>&lt;</button
+		>
+		<h1 class="w-32 text-center">{months[month]} {year}</h1>
+		<button class="h-6 w-6 rounded bg-primary-500 text-white" onclick={() => changeMonth(1)}
+			>&gt;</button
+		>
+	</div>
 	<div class="flex flex-col gap-1 text-center">
 		<div class="flex flex-row gap-1">
 			{#each daysInWeek as day, index}
