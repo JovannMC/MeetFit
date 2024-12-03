@@ -117,9 +117,9 @@
 
 	let isDragging = false;
 
-	function handlePointerDown(day: number) {
+	function handlePointerDown(event: any) {
 		isDragging = true;
-		toggleSelection(day);
+		toggleSelection(event);
 	}
 
 	function handlePointerUp() {
@@ -127,19 +127,23 @@
 		info(`Selections: ${Array.from(selectedDays).join(', ')}`);
 	}
 
-	function handlePointerMove(day: number) {
+	function handlePointerEnter(event: any) {
 		if (isDragging) {
-			toggleSelection(day);
+			toggleSelection(event);
 		}
 	}
 
-	function toggleSelection(day: number) {
+	// TODO: make calendar handle multiple months/years. track that w/ object instead of just day (number)
+	function toggleSelection(event: any) {
+		const day = event.target.textContent;
 		if (selectedDays.has(day)) {
 			deselect(day);
 			info(`Deselected ${day}`);
+			event.target.classList.remove('bg-primary-700');
 		} else {
 			select(day);
 			info(`Selected ${day}`);
+			event.target.classList.add('bg-primary-700');
 		}
 	}
 </script>
@@ -166,9 +170,9 @@
 					class="h-10 w-10 content-center {weekend.includes(day.name)
 						? 'bg-secondary-900'
 						: 'bg-secondary-800'}"
-					onpointerdown={() => handlePointerDown(day.day)}
-					onpointermove={() => handlePointerMove(day.day)}
-					onpointerup={() => handlePointerUp()}
+					onpointerdown={handlePointerDown}
+					onpointerenter={handlePointerEnter}
+					onpointerup={handlePointerUp}
 				>
 					{day.day}
 				</button>
@@ -178,9 +182,9 @@
 					class="h-10 w-10 content-center {weekend.includes(day.name)
 						? 'bg-secondary-700'
 						: 'bg-secondary-600'}"
-					onpointerdown={() => handlePointerDown(day.day)}
-					onpointermove={() => handlePointerMove(day.day)}
-					onpointerup={() => handlePointerUp()}
+					onpointerdown={handlePointerDown}
+					onpointerenter={handlePointerEnter}
+					onpointerup={handlePointerUp}
 				>
 					{day.day}
 				</button>
@@ -190,9 +194,9 @@
 					class="h-10 w-10 content-center {weekend.includes(day.name)
 						? 'bg-secondary-900'
 						: 'bg-secondary-800'}"
-					onpointerdown={() => handlePointerDown(day.day)}
-					onpointermove={() => handlePointerMove(day.day)}
-					onpointerup={() => handlePointerUp()}
+					onpointerdown={handlePointerDown}
+					onpointerenter={handlePointerEnter}
+					onpointerup={handlePointerUp}
 				>
 					{day.day}
 				</button>
