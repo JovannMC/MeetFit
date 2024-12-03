@@ -140,12 +140,12 @@
 	};
 </script>
 
-<div class="flex flex-col items-center justify-center gap-1 bg-surface-800 p-6">
-	<div class="flex flex-row gap-3">
-		<button onclick={() => changeMonth(-1)}>&lt;</button>
-		<h1>{monthNames[month]} {year}</h1>
-		<button onclick={() => changeMonth(1)}>&gt;</button>
-	</div>
+<div class="flex flex-col items-center justify-center gap-4 bg-surface-800 p-6">
+    <div class="flex flex-row gap-3 items-center">
+        <button class="w-6 h-6 bg-primary-500 text-white rounded" onclick={() => changeMonth(-1)}>&lt;</button>
+        <h1 class="w-32 text-center">{monthNames[month]} {year}</h1>
+        <button class="w-6 h-6 bg-primary-500 text-white rounded" onclick={() => changeMonth(1)}>&gt;</button>
+    </div>
 	<div class="flex flex-col gap-1 text-center">
 		<div class="flex flex-row gap-1">
 			{#each daysInWeek as day, index}
