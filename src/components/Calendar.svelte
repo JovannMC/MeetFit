@@ -72,7 +72,7 @@
 	);
 
 	const weekdays = $derived(daysInWeek.slice(0, 5));
-	const weekend = $derived(weekdays.slice(-2));
+	const weekend = $derived(daysInWeek.slice(-2));
 
 	$effect(() => {
 		const firstDayOfWeek = (new Date(year, month, 1).getDay() - startDayIndex + 7) % 7;
