@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { days, months } from '$lib/common';
+	import { info } from '../../routes/log';
 	let { startingDay = 'Monday' } = $props();
 
 	// Date logic
@@ -58,6 +59,8 @@
 	const weekdays = $derived(daysInWeek.slice(0, 5));
 	const weekend = $derived(daysInWeek.slice(-2));
 
+	const isWeekend = (day: string) => weekend.includes(day);
+
 	$effect(() => {
 		const firstDayOfWeek = (new Date(year, month, 1).getDay() - startDayIndex + 7) % 7;
 		const lastDayOfWeek = (new Date(year, month, daysCurrent).getDay() - startDayIndex + 7) % 7;
@@ -106,6 +109,39 @@
 			}
 		}
 	};
+
+	// Calendar select logic
+	const selectedDays = new Set();
+	const select = (day: number) => selectedDays.add(day);
+	const deselect = (day: number) => selectedDays.delete(day);
+
+	let isDragging = false;
+
+	function handlePointerDown(day: number) {
+		isDragging = true;
+		toggleSelection(day);
+	}
+
+	function handlePointerUp() {
+		isDragging = false;
+		info(`Selections: ${Array.from(selectedDays).join(', ')}`);
+	}
+
+	function handlePointerMove(day: number) {
+		if (isDragging) {
+			toggleSelection(day);
+		}
+	}
+
+	function toggleSelection(day: number) {
+		if (selectedDays.has(day)) {
+			deselect(day);
+			info(`Deselected ${day}`);
+		} else {
+			select(day);
+			info(`Selected ${day}`);
+		}
+	}
 </script>
 
 <div class="flex flex-col items-center justify-center gap-4 bg-surface-800 p-6">
@@ -126,31 +162,40 @@
 		</div>
 		<div class="grid grid-cols-7 gap-1">
 			{#each calendar.previousMonth as day}
-				<div
+				<button
 					class="h-10 w-10 content-center {weekend.includes(day.name)
 						? 'bg-secondary-900'
 						: 'bg-secondary-800'}"
+					onpointerdown={() => handlePointerDown(day.day)}
+					onpointermove={() => handlePointerMove(day.day)}
+					onpointerup={() => handlePointerUp()}
 				>
 					{day.day}
-				</div>
+				</button>
 			{/each}
 			{#each calendar.currentMonth as day}
-				<div
+				<button
 					class="h-10 w-10 content-center {weekend.includes(day.name)
 						? 'bg-secondary-700'
 						: 'bg-secondary-600'}"
+					onpointerdown={() => handlePointerDown(day.day)}
+					onpointermove={() => handlePointerMove(day.day)}
+					onpointerup={() => handlePointerUp()}
 				>
 					{day.day}
-				</div>
+				</button>
 			{/each}
 			{#each calendar.nextMonth as day}
-				<div
+				<button
 					class="h-10 w-10 content-center {weekend.includes(day.name)
 						? 'bg-secondary-900'
 						: 'bg-secondary-800'}"
+					onpointerdown={() => handlePointerDown(day.day)}
+					onpointermove={() => handlePointerMove(day.day)}
+					onpointerup={() => handlePointerUp()}
 				>
 					{day.day}
-				</div>
+				</button>
 			{/each}
 		</div>
 	</div>
