@@ -127,7 +127,10 @@
 	const createDayObject = (day: number, month: number, year: number): Day => {
 		const date = new Date(year, month, day);
 		const name = date.toLocaleDateString('en-US', { weekday: 'long' });
+		// for some reason, gotta set the day one day back to get the correct "current day".
+		// i literally have no idea why. i love my bad code.
 		const today = new Date();
+		today.setDate(today.getDate() - 1);
 		const isToday = date.toDateString() === today.toDateString();
 		const isWeekend = weekend.includes(name);
 		const isPast = date < today;
