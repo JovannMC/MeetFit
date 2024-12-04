@@ -1,53 +1,18 @@
 <script lang="ts">
-	import { days, months } from '$lib/common';
+	import { type Day, days, months } from '$lib/common';
 	import { onDestroy, onMount } from 'svelte';
 	import { info } from '../../routes/log';
+
 	let { startingDay = 'Monday' } = $props();
 
-	// Date logic
 	const date = new Date();
 	let month = $state(date.getMonth());
 	let year = $state(date.getFullYear());
 
-	const daysInMonth = (month: number, year: number) => {
-		if (month < 0) {
-			month = 11;
-			year -= 1;
-		} else if (month > 11) {
-			month = 0;
-			year += 1;
-		}
-		return new Date(year, month + 1, 0).getDate() + 1;
-	};
-
-	// Days for the previous, current, and next month
-	const daysPrevious = $derived(daysInMonth(month - 1, year));
-	const daysCurrent = $derived(daysInMonth(month, year));
-	const daysNext = $derived(daysInMonth(month + 1, year));
-
-	const daysPreviousObject = $derived(
-		Array.from({ length: daysPrevious }, (_, i) => ({
-			day: i + 1,
-			name: new Date(year, month - 1, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
-		}))
-	);
-
-	const daysCurrentObject = $derived(
-		Array.from({ length: daysCurrent }, (_, i) => ({
-			day: i + 1,
-			name: new Date(year, month, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
-		}))
-	);
-
-	const daysNextObject = $derived(
-		Array.from({ length: daysNext }, (_, i) => ({
-			day: i + 1,
-			name: new Date(year, month + 1, i + 1).toLocaleDateString('en-US', { weekday: 'long' })
-		}))
-	);
-
-	// Calendar logic
-	let calendar: { previousMonth: any; currentMonth: any; nextMonth: any } = $state({
+	/*
+	 * Calendar logic
+	 */
+	let calendar: { previousMonth: Day[]; currentMonth: Day[]; nextMonth: Day[] } = $state({
 		previousMonth: [],
 		currentMonth: [],
 		nextMonth: []
@@ -60,58 +25,51 @@
 	const weekdays = $derived(daysInWeek.slice(0, 5));
 	const weekend = $derived(daysInWeek.slice(-2));
 
-	const isWeekend = (day: string) => weekend.includes(day);
-
 	$effect(() => {
+		const daysCurrent = daysInMonth(month, year);
+		const daysPrevious = daysInMonth(month - 1, year);
+
 		const firstDayOfWeek = (new Date(year, month, 1).getDay() - startDayIndex + 7) % 7;
 		const lastDayOfWeek = (new Date(year, month, daysCurrent).getDay() - startDayIndex + 7) % 7;
 
-		const adjustMonthYear = (month: number, year: number) => {
-			if (month < 0) return { month: 11, year: year - 1 };
-			if (month > 11) return { month: 0, year: year + 1 };
-			return { month, year };
+		// Function to calculate how many days needed to fill in
+		const calculateAdjacentMonthDays = (
+			length: number,
+			startDay: number,
+			monthOffset: number,
+			year: number
+		) => {
+			return Array.from({ length }, (_, i) => {
+				const { month: adjMonth, year: adjYear } = adjustMonthYear(month + monthOffset, year);
+				const day = startDay + i + 1;
+				return createDayObject(day, adjMonth, adjYear);
+			});
 		};
 
 		calendar = {
+			// Check if first day of the month is not the first day of the week, to calculate how many days to fill in
 			previousMonth:
 				firstDayOfWeek !== 0
-					? daysPreviousObject.slice(-firstDayOfWeek).map((day) => {
-							const { month: adjMonth, year: adjYear } = adjustMonthYear(month - 1, year);
-							return { ...day, month: adjMonth, year: adjYear };
-						})
+					? calculateAdjacentMonthDays(firstDayOfWeek, daysPrevious - firstDayOfWeek, -1, year)
 					: [],
-			currentMonth: daysCurrentObject.map((day) => ({
-				...day,
-				month,
-				year
-			})),
+			currentMonth: Array.from({ length: daysCurrent }, (_, i) =>
+				createDayObject(i + 1, month, year)
+			),
+			// Check if last day of the month is not the last day of the week, to calculate how many days to fill in
 			nextMonth:
-				lastDayOfWeek !== 6
-					? daysNextObject.slice(0, 6 - lastDayOfWeek).map((day) => {
-							const { month: adjMonth, year: adjYear } = adjustMonthYear(month + 1, year);
-							return { ...day, month: adjMonth, year: adjYear };
-						})
-					: []
+				lastDayOfWeek !== 6 ? calculateAdjacentMonthDays(6 - lastDayOfWeek, 0, 1, year) : []
 		};
 	});
 
 	const changeMonth = (direction: number) => {
-		if (direction === -1) {
-			month -= 1;
-			if (month < 0) {
-				month = 11;
-				year -= 1;
-			}
-		} else {
-			month += 1;
-			if (month > 11) {
-				month = 0;
-				year += 1;
-			}
-		}
+		const { month: newMonth, year: newYear } = adjustMonthYear(month + direction, year);
+		month = newMonth;
+		year = newYear;
 	};
 
-	// Calendar select logic
+	/*
+	 * Selection logic
+	 */
 	const selectedDays = new Set();
 	const select = (day: number) => selectedDays.add(day);
 	const deselect = (day: number) => selectedDays.delete(day);
@@ -134,7 +92,6 @@
 		}
 	}
 
-	// TODO: make calendar handle multiple months/years. track that w/ object instead of just day (number)
 	function toggleSelection(event: any) {
 		const day = event.target.textContent;
 		if (selectedDays.has(day)) {
@@ -156,6 +113,39 @@
 	onDestroy(() => {
 		window.removeEventListener('pointerup', handlePointerUp);
 	});
+
+	/*
+	 * Helper functions
+	 */
+	const adjustMonthYear = (month: number, year: number) => {
+		if (month < 0) return { month: 11, year: year - 1 };
+		if (month > 11) return { month: 0, year: year + 1 };
+		return { month, year };
+	};
+
+	const daysInMonth = (month: number, year: number) => {
+		const { month: newMonth, year: newYear } = adjustMonthYear(month, year);
+		return new Date(newYear, newMonth + 1, 1).getDate();
+	};
+
+	const createDayObject = (day: number, month: number, year: number): Day => {
+		const date = new Date(year, month, day);
+		const name = date.toLocaleDateString('en-US', { weekday: 'long' });
+		const today = new Date();
+		const isToday = date.toDateString() === today.toDateString();
+		const isWeekend = weekend.includes(name);
+		const isPast = date < today;
+
+		return {
+			name,
+			day,
+			month,
+			year,
+			isWeekend,
+			isToday,
+			isPast
+		};
+	};
 </script>
 
 <div class="flex flex-col items-center justify-center gap-4 bg-surface-800 p-6">
@@ -177,9 +167,7 @@
 		<div class="grid grid-cols-7 gap-1">
 			{#each calendar.previousMonth as day}
 				<button
-					class="h-10 w-10 content-center {weekend.includes(day.name)
-						? 'bg-secondary-900'
-						: 'bg-secondary-800'}"
+					class="h-10 w-10 content-center bg-secondary-800"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
 					onpointerup={handlePointerUp}
@@ -189,9 +177,7 @@
 			{/each}
 			{#each calendar.currentMonth as day}
 				<button
-					class="h-10 w-10 content-center {weekend.includes(day.name)
-						? 'bg-secondary-700'
-						: 'bg-secondary-600'}"
+					class="h-10 w-10 content-center {day.isWeekend ? 'bg-secondary-700' : 'bg-secondary-600'}"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
 					onpointerup={handlePointerUp}
@@ -201,9 +187,7 @@
 			{/each}
 			{#each calendar.nextMonth as day}
 				<button
-					class="h-10 w-10 content-center {weekend.includes(day.name)
-						? 'bg-secondary-900'
-						: 'bg-secondary-800'}"
+					class="h-10 w-10 content-center bg-secondary-800"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
 					onpointerup={handlePointerUp}

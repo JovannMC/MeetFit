@@ -1,3 +1,12 @@
+export interface Day {
+	name: string;
+	day: number;
+	month: number;
+	year: number;
+	isWeekend: boolean;
+	isToday: boolean;
+	isPast: boolean;
+}
 export const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const months = [
 	'January',
@@ -23,8 +32,8 @@ export const ordinal = (n: number) => {
 export const formatTime = (date: Date) => {
 	const hours = date.getHours();
 	const minutes = date.getMinutes();
-	const ampm = hours >= 12 ? 'pm' : 'am';
-	return `${hours % 12 || 12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+	const amPm = hours >= 12 ? 'pm' : 'am';
+	return `${hours % 12 || 12}:${minutes.toString().padStart(2, '0')} ${amPm}`;
 };
 
 export const formatDate = (date: Date) => {
