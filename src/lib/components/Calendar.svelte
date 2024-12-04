@@ -18,7 +18,7 @@
 		nextMonth: []
 	});
 
-	const weekdayMap = new Map(days.map((day, index) => [day, index]));
+	const weekdayMap = new Map(days.map((day, i) => [day, i]));
 	const startDayIndex = $derived(weekdayMap.get(startingDay) ?? 0);
 	const daysInWeek = $derived(days.slice(startDayIndex).concat(days.slice(0, startDayIndex)));
 
@@ -160,14 +160,15 @@
 	</div>
 	<div class="flex flex-col gap-1 text-center">
 		<div class="flex flex-row gap-1">
-			{#each daysInWeek as day, index}
-				<div class="w-10 {index >= 5 ? 'bg-primary-800' : 'bg-primary-500'}">{day.slice(0, 3)}</div>
+			{#each daysInWeek as day, i}
+				<div class="w-10 {i >= 5 ? 'bg-primary-800' : 'bg-primary-500'}">{day.slice(0, 3)}</div>
 			{/each}
 		</div>
 		<div class="grid grid-cols-7 gap-1">
 			{#each calendar.previousMonth as day}
 				<button
-					class="h-10 w-10 content-center bg-secondary-800"
+					class="h-10 w-10 content-center bg-secondary-800
+					{day.isPast ? 'text-gray-400' : ''}"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
 					onpointerup={handlePointerUp}
@@ -177,7 +178,10 @@
 			{/each}
 			{#each calendar.currentMonth as day}
 				<button
-					class="h-10 w-10 content-center {day.isWeekend ? 'bg-secondary-700' : 'bg-secondary-600'}"
+					class="h-10 w-10 content-center
+						{day.isWeekend ? 'bg-secondary-700' : 'bg-secondary-600'}
+						{day.isToday ? 'text-green-400' : ''}
+						{day.isPast ? 'text-gray-400' : ''}"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
 					onpointerup={handlePointerUp}
@@ -187,7 +191,8 @@
 			{/each}
 			{#each calendar.nextMonth as day}
 				<button
-					class="h-10 w-10 content-center bg-secondary-800"
+					class="h-10 w-10 content-center bg-secondary-800
+					{day.isPast ? 'text-gray-400' : ''}"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
 					onpointerup={handlePointerUp}
