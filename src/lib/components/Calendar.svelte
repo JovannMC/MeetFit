@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type Day, days, months } from '$lib/common';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { info } from '../../routes/log';
 
 	let { startingDay = 'Monday', selected } = $props();
@@ -97,21 +97,17 @@
 		if (selectedDays.has(day)) {
 			deselect(day);
 			info(`Deselected ${day}`);
-			event.target.classList.remove('bg-primary-900');
+			event.target.classList.remove('!bg-primary-800');
 		} else {
 			select(day);
 			info(`Selected ${day}`);
-			event.target.classList.add('bg-primary-900');
+			event.target.classList.add('!bg-primary-800');
 		}
 	}
 
 	onMount(() => {
 		// Handles pointer up event outside of the calendar
 		window.addEventListener('pointerup', handlePointerUp);
-	});
-
-	onDestroy(() => {
-		window.removeEventListener('pointerup', handlePointerUp);
 	});
 
 	/*
@@ -148,7 +144,7 @@
 	};
 </script>
 
-<div class="flex flex-col items-center justify-center gap-4 bg-surface-800 p-6">
+<div class="flex flex-col items-center justify-center gap-4 p-6">
 	<div class="flex flex-row items-center gap-3">
 		<button class="h-6 w-6 rounded bg-primary-500 text-white" onclick={() => changeMonth(-1)}
 			>&lt;</button

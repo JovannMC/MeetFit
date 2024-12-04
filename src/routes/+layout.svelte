@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Header from '$lib/components/Header.svelte';
 	import { i18n } from '$lib/i18n';
 	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
 	import '../app.css';
@@ -28,6 +29,10 @@
 	<meta content="#dddddd" data-react-helmet="true" name="theme-color" />
 </svelte:head>
 
+<Header />
+
 <ParaglideJS {i18n}>
-	{@render children()}
+    <div class="p-6">
+        {@render children()}
+    </div>
 </ParaglideJS>
