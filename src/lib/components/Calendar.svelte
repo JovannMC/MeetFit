@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { days, months } from '$lib/common';
+	import { onDestroy, onMount } from 'svelte';
 	import { info } from '../../routes/log';
 	let { startingDay = 'Monday' } = $props();
 
@@ -146,6 +147,15 @@
 			event.target.classList.add('bg-primary-700');
 		}
 	}
+
+	onMount(() => {
+		// Handles pointer up event outside of the calendar
+		window.addEventListener('pointerup', handlePointerUp);
+	});
+
+	onDestroy(() => {
+		window.removeEventListener('pointerup', handlePointerUp);
+	});
 </script>
 
 <div class="flex flex-col items-center justify-center gap-4 bg-surface-800 p-6">
