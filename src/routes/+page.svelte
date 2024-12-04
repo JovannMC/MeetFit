@@ -2,6 +2,7 @@
 	import { days } from '$lib/common';
 	import Calendar from '$lib/components/Calendar.svelte';
 	import Dropdown from '$lib/components/Dropdown.svelte';
+	import { info } from './log';
 
 	const timezones = Intl.supportedValuesOf('timeZone');
 	const filteredTimezones = timezones.filter(
@@ -11,19 +12,22 @@
 
 	let startingDay = $state('Monday');
 	let timezone = $state(currentTimezone);
+
+	function handleSelectedDays(selectedDays: string[]) {
+		info(`Selected days: ${selectedDays.join(', ')}`);
+	}
 </script>
 
 <form id="create">
 	<label for="">Event name:</label>
 	<input name="eventName" type="text" />
-	<!-- Date range -->
-
+	
 	<!-- Time range -->
 	<Dropdown
 		id="startingDay"
 		label="Weekday start:"
 		options={days}
-		selected={days[1]}
+		selected={startingDay}
 		onChange={(day: string) => {
 			startingDay = day;
 		}}
@@ -38,5 +42,7 @@
 			tz = timezone;
 		}}
 	/>
-	<Calendar {startingDay} />
+
+	<!-- Date range -->
+	<Calendar {startingDay} selected={(days: string[]) => handleSelectedDays(days)} />
 </form>

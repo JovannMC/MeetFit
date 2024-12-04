@@ -3,7 +3,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { info } from '../../routes/log';
 
-	let { startingDay = 'Monday' } = $props();
+	let { startingDay = 'Monday', selected } = $props();
 
 	const date = new Date();
 	let month = $state(date.getMonth());
@@ -83,7 +83,7 @@
 
 	function handlePointerUp() {
 		isDragging = false;
-		info(`Selections: ${Array.from(selectedDays).join(', ')}`);
+		selected(Array.from(selectedDays));
 	}
 
 	function handlePointerEnter(event: any) {
@@ -97,11 +97,11 @@
 		if (selectedDays.has(day)) {
 			deselect(day);
 			info(`Deselected ${day}`);
-			event.target.classList.remove('bg-primary-700');
+			event.target.classList.remove('bg-primary-900');
 		} else {
 			select(day);
 			info(`Selected ${day}`);
-			event.target.classList.add('bg-primary-700');
+			event.target.classList.add('bg-primary-900');
 		}
 	}
 
