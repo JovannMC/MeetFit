@@ -146,24 +146,24 @@
 
 <div class="flex flex-col items-center justify-center gap-4 p-6">
 	<div class="flex flex-row items-center gap-3">
-		<button class="h-6 w-6 rounded bg-primary-500 text-white" onclick={() => changeMonth(-1)}
+		<button class="h-7 w-7 rounded bg-primary-500 text-white" onclick={() => changeMonth(-1)}
 			>&lt;</button
 		>
-		<h1 class="w-32 text-center">{months[month]} {year}</h1>
-		<button class="h-6 w-6 rounded bg-primary-500 text-white" onclick={() => changeMonth(1)}
+		<h1 class="w-48 text-lg text-center">{months[month]} {year}</h1>
+		<button class="h-7 w-7 rounded bg-primary-500 text-white" onclick={() => changeMonth(1)}
 			>&gt;</button
 		>
 	</div>
 	<div class="flex flex-col gap-1 text-center">
 		<div class="flex flex-row gap-1">
 			{#each daysInWeek as day, i}
-				<div class="w-10 {i >= 5 ? 'bg-primary-800' : 'bg-primary-500'}">{day.slice(0, 3)}</div>
+				<div class="w-12 {i >= 5 ? 'bg-primary-800' : 'bg-primary-500'}">{day.slice(0, 3)}</div>
 			{/each}
 		</div>
 		<div class="grid grid-cols-7 gap-1">
 			{#each calendar.previousMonth as day}
 				<button
-					class="h-10 w-10 content-center bg-secondary-800
+					class="h-12 w-12 text-xl content-center bg-secondary-800
 					{day.isPast ? 'text-gray-400' : ''}"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
@@ -174,7 +174,7 @@
 			{/each}
 			{#each calendar.currentMonth as day}
 				<button
-					class="h-10 w-10 content-center
+					class="h-12 w-12 text-xl content-center
 						{day.isWeekend ? 'bg-secondary-700' : 'bg-secondary-600'}
 						{day.isToday ? 'text-green-400' : ''}
 						{day.isPast ? 'text-gray-400' : ''}"
@@ -187,7 +187,7 @@
 			{/each}
 			{#each calendar.nextMonth as day}
 				<button
-					class="h-10 w-10 content-center bg-secondary-800
+					class="h-12 w-12 text-xl content-center bg-secondary-800
 					{day.isPast ? 'text-gray-400' : ''}"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
