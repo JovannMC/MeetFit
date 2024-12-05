@@ -70,15 +70,32 @@
 	/*
 	 * Selection logic
 	 */
-	const selectedDays = new Set();
+	const selectedDays: Set<number> = new Set();
 	const select = (day: number) => selectedDays.add(day);
 	const deselect = (day: number) => selectedDays.delete(day);
 
 	let isDragging = false;
+	let isSelecting = false;
+	let startDrag: number;
+	let startDragIndex: number;
 
 	function handlePointerDown(event: any) {
 		isDragging = true;
-		toggleSelection(event);
+		startDrag = parseInt(event.target.textContent);
+		startDragIndex = Array.from(document.querySelectorAll('.day')).indexOf(event.target);
+
+		const classList = event.target.classList;
+		if (classList.contains('!bg-primary-800')) {
+			isSelecting = false;
+			deselect(startDrag);
+			classList.remove('!bg-primary-800');
+			info(`Starting deselection from ${startDrag}`);
+		} else {
+			isSelecting = true;
+			select(startDrag);
+			classList.add('!bg-primary-800');
+			info(`Starting selection from ${startDrag}`);
+		}
 	}
 
 	function handlePointerUp() {
@@ -87,21 +104,38 @@
 	}
 
 	function handlePointerEnter(event: any) {
-		if (isDragging) {
-			toggleSelection(event);
-		}
-	}
+		const currentIndex = Array.from(document.querySelectorAll('.day')).indexOf(event.target);
 
-	function toggleSelection(event: any) {
-		const day = event.target.textContent;
-		if (selectedDays.has(day)) {
-			deselect(day);
-			info(`Deselected ${day}`);
-			event.target.classList.remove('!bg-primary-800');
-		} else {
-			select(day);
-			info(`Selected ${day}`);
-			event.target.classList.add('!bg-primary-800');
+		if (isDragging) {
+			const startRow = Math.floor(startDragIndex / 7);
+			const startCol = startDragIndex % 7;
+			const currentRow = Math.floor(currentIndex / 7);
+			const currentCol = currentIndex % 7;
+
+			const rowStart = Math.min(startRow, currentRow);
+			const rowEnd = Math.max(startRow, currentRow);
+			const colStart = Math.min(startCol, currentCol);
+			const colEnd = Math.max(startCol, currentCol);
+
+			for (let row = rowStart; row <= rowEnd; row++) {
+				for (let col = colStart; col <= colEnd; col++) {
+					const index = row * 7 + col;
+					const dayElement = document.querySelectorAll('.day')[index];
+					const dayNumber = parseInt(dayElement.textContent ?? '0');
+
+					if (dayElement) {
+						if (isSelecting) {
+							select(dayNumber);
+							dayElement.classList.add('!bg-primary-800');
+							info(`Selecting ${dayNumber}`);
+						} else {
+							deselect(dayNumber);
+							dayElement.classList.remove('!bg-primary-800');
+							info(`Deselecting ${dayNumber}`);
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -152,7 +186,7 @@
 		<button class="h-7 w-7 rounded bg-primary-500 text-white" onclick={() => changeMonth(-1)}
 			>&lt;</button
 		>
-		<h1 class="w-48 text-lg text-center">{months[month]} {year}</h1>
+		<h1 class="w-48 text-center text-lg">{months[month]} {year}</h1>
 		<button class="h-7 w-7 rounded bg-primary-500 text-white" onclick={() => changeMonth(1)}
 			>&gt;</button
 		>
@@ -166,7 +200,7 @@
 		<div class="grid grid-cols-7 gap-1">
 			{#each calendar.previousMonth as day}
 				<button
-					class="h-12 w-12 text-xl content-center bg-secondary-800
+					class="day h-12 w-12 content-center bg-secondary-800 text-xl
 					{day.isPast ? 'text-gray-400' : ''}"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
@@ -177,7 +211,7 @@
 			{/each}
 			{#each calendar.currentMonth as day}
 				<button
-					class="h-12 w-12 text-xl content-center
+					class="day h-12 w-12 content-center text-xl
 						{day.isWeekend ? 'bg-secondary-700' : 'bg-secondary-600'}
 						{day.isToday ? 'text-green-400' : ''}
 						{day.isPast ? 'text-gray-400' : ''}"
@@ -190,7 +224,7 @@
 			{/each}
 			{#each calendar.nextMonth as day}
 				<button
-					class="h-12 w-12 text-xl content-center bg-secondary-800
+					class="day h-12 w-12 content-center bg-secondary-800 text-xl
 					{day.isPast ? 'text-gray-400' : ''}"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
