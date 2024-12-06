@@ -1,0 +1,1 @@
+// Get info of event's attendees

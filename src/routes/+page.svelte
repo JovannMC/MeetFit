@@ -12,16 +12,48 @@
 
 	let startingDay = $state('Monday');
 	let timezone = $state(currentTimezone);
-
-	function handleSelectedDays(selectedDays: string[]) {
-		info(`Selected days: ${selectedDays.join(', ')}`);
-	}
+	let selectedDays: string[];
 
 	let timeValue = $state([6, 18]);
+
+	const userId = 0;
 
 	$effect(() => {
 		info(`Time range: ${timeValue[0]} - ${timeValue[1]}`);
 	});
+
+	async function createEvent() {
+		info('Creating event...');
+		const response = await fetch('/api/events', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				name: 'test',
+				timezone,
+				timeRangeStart: timeValue[0],
+				timeRangeEnd: timeValue[1],
+				days: selectedDays
+			})
+		});
+
+		const result = await response.json();
+		if (result.success) {
+			info('Event created successfully:', JSON.stringify(result));
+		} else {
+			info('Failed to create event');
+		}
+	}
+
+	let apiEndpoint = $state('/api/events');
+
+	async function checkAPIResponse() {
+		info('Checking API response...');
+		const response = await fetch(`${apiEndpoint}`);
+		const result = await response.json();
+		info('API response:', JSON.stringify(result));
+	}
 </script>
 
 <div class="flex flex-col items-center justify-center gap-2">
@@ -82,7 +114,28 @@
 
 		<!-- Date range -->
 		<div class="col-span-1 rounded bg-surface-800">
-			<Calendar {startingDay} selected={(days: string[]) => handleSelectedDays(days)} />
+			<Calendar {startingDay} selected={(days: string[]) => (selectedDays = days)} />
+		</div>
+
+		<!-- Submit button -->
+		<div class="col-span-1 flex justify-center">
+			<button class="rounded bg-primary-800 p-2 text-white" onclick={createEvent}
+				>Create event</button
+			>
+		</div>
+
+		<!-- API Check (TO REMOVE lATER) -->
+		<div class="col-span-1 flex flex-col items-center gap-2 text-center">
+			<label class="text-xl" for="apiEndpoint">API Endpoint:</label>
+			<input
+				name="apiEndpoint"
+				type="text"
+				class="w-full rounded border border-gray-300 p-2"
+				bind:value={apiEndpoint}
+			/>
+			<button class="rounded bg-primary-800 p-2 text-white" onclick={checkAPIResponse}
+				>Check API</button
+			>
 		</div>
 	</div>
 </div>
