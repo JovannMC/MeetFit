@@ -1,12 +1,13 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
+// from template, probably not gonna be used
 export const user = sqliteTable('user', {
 	id: text('id').primaryKey(),
-	age: integer('age'),
 	username: text('username').notNull().unique(),
 	passwordHash: text('password_hash').notNull()
 });
 
+// from template, probably not gonna be used
 export const session = sqliteTable('session', {
 	id: text('id').primaryKey(),
 	userId: text('user_id')
@@ -22,6 +23,15 @@ export const event = sqliteTable('event', {
 	timeRangeStart: integer('time_range_start').notNull(),
 	timeRangeEnd: integer('time_range_end').notNull(),
 	days: text('days').notNull()
+});
+
+export const attendee = sqliteTable('attendee', {
+	id: text('id').primaryKey(),
+	eventId: text('event_id')
+		.notNull()
+		.references(() => event.id),
+	name: text('name').notNull(),
+	availability: text('availability').notNull()
 });
 
 export type Session = typeof session.$inferSelect;

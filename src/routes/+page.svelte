@@ -10,6 +10,7 @@
 	);
 	const currentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+	let eventName = $state('');
 	let startingDay = $state('Monday');
 	let timezone = $state(currentTimezone);
 	let selectedDays: string[];
@@ -30,7 +31,7 @@
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				name: 'test',
+				name: eventName,
 				timezone,
 				timeRangeStart: timeValue[0],
 				timeRangeEnd: timeValue[1],
@@ -62,7 +63,12 @@
 		<!-- Event name -->
 		<div class="col-span-1 flex flex-col items-center gap-2 text-center">
 			<label class="text-xl" for="eventName">Event name:</label>
-			<input name="eventName" type="text" class="w-full rounded border border-gray-300 p-2" />
+			<input
+				name="eventName"
+				type="text"
+				class="w-full rounded border border-gray-300 p-2"
+				bind:value={eventName}
+			/>
 		</div>
 
 		<!-- Starting day and Time zone -->

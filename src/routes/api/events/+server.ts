@@ -24,4 +24,7 @@ export const POST: RequestHandler = async ({ request }) => {
 export const GET: RequestHandler = async () => {
 	// TODO: search events? maybe
 	// or stats?
+	const events = await db.select().from(event);
+
+	return json({ events });
 };
