@@ -27,8 +27,9 @@
 
 	$effect(() => {
 		const daysCurrent = daysInMonth(month, year);
-		info(`Current month: ${months[month]} ${year} has ${daysCurrent} days.`);
+		info(`Current month, ${months[month]} ${year}, has ${daysCurrent} days.`);
 		const daysPrevious = daysInMonth(month - 1, year);
+		info(`Previous month, ${months[month - 1]} ${year}, has ${daysPrevious} days.`);
 
 		const firstDayOfWeek = (new Date(year, month, 0).getDay() - startDayIndex + 7) % 7;
 		const lastDayOfWeek = (new Date(year, month, daysCurrent).getDay() - startDayIndex + 7) % 7;
