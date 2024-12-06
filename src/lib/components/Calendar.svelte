@@ -27,9 +27,10 @@
 
 	$effect(() => {
 		const daysCurrent = daysInMonth(month, year);
+		info(`Current month: ${months[month]} ${year} has ${daysCurrent} days.`);
 		const daysPrevious = daysInMonth(month - 1, year);
 
-		const firstDayOfWeek = (new Date(year, month, 1).getDay() - startDayIndex + 7) % 7;
+		const firstDayOfWeek = (new Date(year, month, 0).getDay() - startDayIndex + 7) % 7;
 		const lastDayOfWeek = (new Date(year, month, daysCurrent).getDay() - startDayIndex + 7) % 7;
 
 		// Function to calculate how many days needed to fill in
@@ -57,7 +58,7 @@
 			),
 			// Check if last day of the month is not the last day of the week, to calculate how many days to fill in
 			nextMonth:
-				lastDayOfWeek !== 6 ? calculateAdjacentMonthDays(6 - lastDayOfWeek, 0, 1, year) : []
+				lastDayOfWeek !== 6 ? calculateAdjacentMonthDays(7 - lastDayOfWeek, 0, 1, year) : []
 		};
 	});
 
@@ -155,16 +156,13 @@
 
 	const daysInMonth = (month: number, year: number) => {
 		const { month: newMonth, year: newYear } = adjustMonthYear(month, year);
-		return new Date(newYear, newMonth + 1, 1).getDate();
+		return new Date(newYear, newMonth + 1, 0).getDate();
 	};
 
 	const createDayObject = (day: number, month: number, year: number): Day => {
 		const date = new Date(year, month, day);
 		const name = date.toLocaleDateString('en-US', { weekday: 'long' });
-		// for some reason, gotta set the day one day back to get the correct "current day".
-		// i literally have no idea why. i love my bad code.
 		const today = new Date();
-		today.setDate(today.getDate() - 1);
 		const isToday = date.toDateString() === today.toDateString();
 		const isWeekend = weekend.includes(name);
 		const isPast = date < today;
