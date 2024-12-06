@@ -16,3 +16,16 @@ export const GET: RequestHandler = async ({ params }) => {
 
 	return json({ event: eventData });
 };
+
+// Delete event
+export const DELETE: RequestHandler = async ({ params }) => {
+	const eventId = params.id;
+
+	const deletedRows = await db.delete(event).where(eq(event.id, eventId));
+
+	if (deletedRows === 0) {
+		return json({ error: 'Event not found' }, { status: 404 });
+	}
+
+	return json({ message: 'Event deleted successfully' });
+};

@@ -50,7 +50,7 @@
 	let apiEndpoint = $state('/api/events');
 
 	async function checkAPIResponse() {
-		info('Checking API response...');
+		info(`Checking API response for: ${apiEndpoint}`);
 		const response = await fetch(`${apiEndpoint}`);
 		const result = await response.json();
 		info('API response:', JSON.stringify(result));
