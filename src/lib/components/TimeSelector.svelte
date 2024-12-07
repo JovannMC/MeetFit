@@ -49,15 +49,17 @@
 		<h1 class="text-base">{day} {shortMonth} {year}</h1>
 	</div>
 
-	<div class="flex flex-col items-center">
+	<div class="flex flex-col items-center justify-center">
 		{#each timeSlotTimes as timeSlot}
-			<div class="flex flex-row gap-3 text-right">
-				<p class="w-14 text-sm">{timeSlot}</p>
-				<button
-					class="h-6 w-12 border-2 border-secondary-500 bg-primary-500"
-					aria-label={timeSlot}
-					onclick={() => selectTimeSlot(timeSlot)}
-				></button>
+			<div class="flex flex-row items-center gap-3">
+				<p class="w-16 text-right text-sm">{timeSlot}</p>
+				<div class="flex w-28 items-center">
+					<button
+						class="h-6 w-12 border-2 border-secondary-500 bg-primary-500"
+						aria-label={timeSlot}
+						onclick={() => selectTimeSlot(timeSlot)}
+					></button>
+				</div>
 			</div>
 		{/each}
 	</div>

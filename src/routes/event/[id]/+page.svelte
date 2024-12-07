@@ -5,7 +5,7 @@
 
 	let { data } = $props();
 
-    const event = data.props?.event;
+	const event = data.props?.event;
 
 	const timezones = Intl.supportedValuesOf('timeZone');
 	const filteredTimezones = timezones.filter(
@@ -15,7 +15,7 @@
 	let timezone = $state(currentTimezone);
 
 	$effect(() => {
-        info(`Event data: ${JSON.stringify(event)}`);
+		info(`Event data: ${JSON.stringify(event)}`);
 	});
 
 	const eventDays: Day[] = JSON.parse(event?.days ?? '[]');
@@ -43,7 +43,9 @@
 			<h2 class="text-3xl font-bold">Days</h2>
 			<div class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
 				{#each eventDays as day}
-					<TimeSelector dayObject={day} rangeStart={rangeStart} rangeEnd={rangeEnd} bind:selected={selectedTimes} />
+					<div class="rounded bg-gray-500 p-4">
+						<TimeSelector dayObject={day} {rangeStart} {rangeEnd} bind:selected={selectedTimes} />
+					</div>
 				{/each}
 			</div>
 		</div>
