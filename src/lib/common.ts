@@ -23,6 +23,7 @@ export const months = [
 	'December'
 ];
 
+// stole these, not sure if i'll use them lol
 export const ordinal = (n: number) => {
 	const s = ['th', 'st', 'nd', 'rd'];
 	const v = n % 100;
