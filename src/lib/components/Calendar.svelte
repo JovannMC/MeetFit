@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { info } from '../../routes/log';
 
-	let { startingDay = 'Monday', selected } = $props();
+	let { startingDay = 'Monday', selected = $bindable() } = $props();
 
 	const date = new Date();
 	let month = $state(date.getMonth());
@@ -72,18 +72,32 @@
 	/*
 	 * Selection logic
 	 */
-	const selectedDays: Set<number> = new Set();
-	const select = (day: number) => selectedDays.add(day);
-	const deselect = (day: number) => selectedDays.delete(day);
+	const isSameDay = (day1: Day, day2: Day) => {
+		return day1.day === day2.day && day1.month === day2.month && day1.year === day2.year;
+	};
+
+	const select = (day: Day) => {
+		if (![...selected].some((selectedDay: Day) => isSameDay(selectedDay, day))) {
+			selected.push(day);
+		}
+	};
+
+	const deselect = (day: Day) => {
+		selected.forEach((selectedDay: Day) => {
+			if (isSameDay(selectedDay, day)) {
+				selected.splice(selected.indexOf(selectedDay), 1);
+			}
+		});
+	};
 
 	let isDragging = false;
 	let isSelecting = false;
-	let startDrag: number;
+	let startDrag: Day;
 	let startDragIndex: number;
 
 	function handlePointerDown(event: any) {
 		isDragging = true;
-		startDrag = parseInt(event.target.textContent);
+		startDrag = JSON.parse(event.target.getAttribute('data-day')) as Day;
 		startDragIndex = Array.from(document.querySelectorAll('.day')).indexOf(event.target);
 
 		const classList = event.target.classList;
@@ -91,18 +105,19 @@
 			isSelecting = false;
 			deselect(startDrag);
 			classList.remove('!bg-primary-800');
-			info(`Starting deselection from ${startDrag}`);
+			info(`Starting deselection from ${startDrag.year}/${startDrag.month + 1}/${startDrag.day}`);
 		} else {
 			isSelecting = true;
 			select(startDrag);
 			classList.add('!bg-primary-800');
-			info(`Starting selection from ${startDrag}`);
+			info(`Starting selection from ${startDrag.year}/${startDrag.month + 1}/${startDrag.day}`);
 		}
 	}
 
 	function handlePointerUp() {
 		isDragging = false;
-		selected(Array.from(selectedDays));
+		isSelecting = false;
+		info(`Selected days: ${selected.map((day: Day) => `${day.year}/${day.month + 1}/${day.day}`).join(', ')}`);
 	}
 
 	function handlePointerEnter(event: any) {
@@ -123,17 +138,17 @@
 				for (let col = colStart; col <= colEnd; col++) {
 					const index = row * 7 + col;
 					const dayElement = document.querySelectorAll('.day')[index];
-					const dayNumber = parseInt(dayElement.textContent ?? '0');
+					const day = JSON.parse(dayElement.getAttribute('data-day') || '{}') as Day;
 
 					if (dayElement) {
 						if (isSelecting) {
-							select(dayNumber);
+							select(day);
 							dayElement.classList.add('!bg-primary-800');
-							info(`Selecting ${dayNumber}`);
+							info(`Selecting ${day.year}/${day.month + 1}/${day.day}`);
 						} else {
-							deselect(dayNumber);
+							deselect(day);
 							dayElement.classList.remove('!bg-primary-800');
-							info(`Deselecting ${dayNumber}`);
+							info(`Deselecting ${day.year}/${day.month + 1}/${day.day}`);
 						}
 					}
 				}
@@ -204,6 +219,7 @@
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
 					onpointerup={handlePointerUp}
+					data-day={JSON.stringify(day)}
 				>
 					{day.day}
 				</button>
@@ -217,6 +233,7 @@
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
 					onpointerup={handlePointerUp}
+					data-day={JSON.stringify(day)}
 				>
 					{day.day}
 				</button>
@@ -228,6 +245,7 @@
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
 					onpointerup={handlePointerUp}
+					data-day={JSON.stringify(day)}
 				>
 					{day.day}
 				</button>

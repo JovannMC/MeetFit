@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { days } from '$lib/common';
+	import { days, type Day } from '$lib/common';
 	import Calendar from '$lib/components/Calendar.svelte';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
 	import { info } from './log';
@@ -13,10 +13,11 @@
 	let eventName = $state('');
 	let startingDay = $state('Monday');
 	let timezone = $state(currentTimezone);
-	let selectedDays: string[];
+	let selectedDays: Day[] = $state([]);
 
 	let timeValue = $state([6, 18]);
 
+	// TODO: use later maybe
 	const userId = 0;
 
 	$effect(() => {
@@ -120,7 +121,7 @@
 
 		<!-- Date range -->
 		<div class="col-span-1 rounded bg-surface-800">
-			<Calendar {startingDay} selected={(days: string[]) => (selectedDays = days)} />
+			<Calendar {startingDay} bind:selected={selectedDays} />
 		</div>
 
 		<!-- Submit button -->
