@@ -1,6 +1,6 @@
-import { json } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { event, user, attendee } from '$lib/server/db/schema';
+import { attendee, event, user } from '$lib/server/db/schema';
+import { json } from '@sveltejs/kit';
 import { count } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
