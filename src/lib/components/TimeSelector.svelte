@@ -1,18 +1,8 @@
 <script lang="ts">
-	import type { Day } from '$lib/common';
 	import { info } from '../../routes/log';
 
-	let {
-		dayObject,
-		rangeStart,
-		rangeEnd,
-		selected = $bindable()
-	}: {
-		dayObject: Day;
-		rangeStart: number;
-		rangeEnd: number;
-		selected: { [key: string]: string };
-	} = $props();
+	let { dayObject, rangeStart, rangeEnd, selected, onpointerdown, onpointerup, onpointerenter } =
+		$props();
 
 	const year = dayObject.year;
 	const month = dayObject.month;
@@ -36,11 +26,6 @@
 			let minutes = (time - hours) * 60;
 			return `${hours}:${minutes === 0 ? '00' : minutes}`;
 		});
-
-	function selectTimeSlot(time: string) {
-		selected[`${year}-${month}-${day}`] = time;
-		info(`Selected time slot: ${time}`);
-	}
 </script>
 
 <div class="flex flex-col items-center justify-center">
@@ -57,7 +42,10 @@
 					<button
 						class="h-6 w-12 border-2 border-secondary-500 bg-primary-500"
 						aria-label={timeSlot}
-						onclick={() => selectTimeSlot(timeSlot)}
+						onclick={() => selected(dayObject, timeSlot)}
+						onpointerdown={(e) => onpointerdown(e, dayObject, timeSlot)}
+						onpointerup={onpointerup}
+						onpointerenter={(e) => onpointerenter(e, dayObject, timeSlot)}
 					></button>
 				</div>
 			</div>

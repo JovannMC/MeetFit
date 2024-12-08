@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { info } from '../../routes/log';
 
-	let { startingDay = 'Monday', selected = $bindable() } = $props();
+	let { startingDay = 'Monday', selected = $bindable() } : { startingDay: string, selected: Day[] } = $props();
 
 	const date = new Date();
 	let month = $state(date.getMonth());
