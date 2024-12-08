@@ -23,6 +23,12 @@ export const months = [
 	'December'
 ];
 
+export interface Attendee {
+	name: string;
+	availability: string;
+	passwordHash: string;
+}
+
 // stole these, not sure if i'll use them lol
 export const ordinal = (n: number) => {
 	const s = ['th', 'st', 'nd', 'rd'];

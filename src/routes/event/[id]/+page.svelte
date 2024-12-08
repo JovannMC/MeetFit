@@ -90,35 +90,111 @@
 		// Handles pointer up event outside of the time selectors
 		window.addEventListener('pointerup', handlePointerUp);
 	});
+
+	let username = $state('');
+	let isAuthenticated: boolean | null = $state(null);
+	let showNameError = $state(false);
+
+	function handleSubmit(event: Event) {
+		const formData = new FormData(event.target as HTMLFormElement);
+		const password = formData.get('password') as string;
+
+		authenticate(username, password);
+	}
+
+	// i don't think this is how i should authenticate lmao, i should move this to server
+	async function authenticate(username: string, password: string) {
+		showNameError = false;
+		if (!username) {
+			info('Username is required');
+			showNameError = true;
+			return;
+		}
+
+		const response = await fetch(`/api/events/${event?.id}/attendees`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ username, password })
+		});
+
+		const result = await response.json();
+		if (result.success) {
+			info('Authentication successful:', JSON.stringify(result));
+			isAuthenticated = true;
+		} else {
+			info('Authentication failed:', JSON.stringify(result));
+			isAuthenticated = false;
+		}
+	}
 </script>
 
-<div class="flex flex-col items-center justify-center gap-2">
+<div class="flex flex-col items-center justify-center gap-4">
 	<h1 class="text-center text-4xl font-bold">Event: {event?.name}</h1>
-	<div class="flex flex-col items-center gap-2">
+	<div class="flex flex-col items-center gap-4 rounded border-2 border-primary-500 bg-gray-500 p-6">
+		{#if isAuthenticated === null || !isAuthenticated}
+			<h1 class="text-center text-3xl font-bold">Sign in to event:</h1>
+			<form onsubmit={handleSubmit} class="flex flex-col items-center">
+				<div class="flex flex-col items-center gap-2 md:flex-row md:items-end">
+					<div class="flex flex-col gap-1">
+						<label class="text-left text-base" for="name">Name</label>
+						<input
+							name="name"
+							type="text"
+							class="w-full rounded border border-gray-300 p-2"
+							bind:value={username}
+						/>
+					</div>
+					<div class="flex flex-col gap-1">
+						<label class="text-left text-base" for="password">Password (optional)</label>
+						<input
+							name="password"
+							type="password"
+							class="w-full rounded border border-gray-300 p-2"
+						/>
+					</div>
+					<button type="submit" class="rounded bg-primary-500 px-4 py-2 text-white">Sign in</button>
+				</div>
+			</form>
+
+			{#if isAuthenticated === false}
+				<p class="text-red-500">Authentication failed</p>
+			{/if}
+		{:else if isAuthenticated}
+			<p class="text-green-500">Authenticated</p>
+		{/if}
+
+		{#if showNameError}
+			<p class="text-red-500">Name is required</p>
+		{/if}
+	</div>
+
+	<div class="flex flex-col items-center gap-2 text-center">
 		<label class="text-xl" for="timezone">Time zone:</label>
 		<select name="timezone" bind:value={timezone} class="w-full rounded border border-gray-300 p-2">
 			{#each filteredTimezones as tz}
 				<option value={tz}>{tz}</option>
 			{/each}
 		</select>
+	</div>
 
-		<div class="flex flex-col items-center gap-2">
-			<h2 class="text-3xl font-bold">Days</h2>
-			<div class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
-				{#each eventDays as day}
-					<div class="rounded bg-gray-500 p-4">
-						<TimeSelector
-							dayObject={day}
-							{rangeStart}
-							{rangeEnd}
-							selected={(day: Day, time: string) => selectTimeSlot(day, time)}
-							onpointerdown={handlePointerDown}
-							onpointerup={handlePointerUp}
-							onpointerenter={handlePointerEnter}
-						/>
-					</div>
-				{/each}
-			</div>
+	<div class="flex flex-col items-center gap-2">
+		<h2 class="text-3xl font-bold">Days</h2>
+		<div class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
+			{#each eventDays as day}
+				<div class="rounded bg-gray-500 p-4">
+					<TimeSelector
+						dayObject={day}
+						{rangeStart}
+						{rangeEnd}
+						selected={(day: Day, time: string) => selectTimeSlot(day, time)}
+						onpointerdown={handlePointerDown}
+						onpointerup={handlePointerUp}
+						onpointerenter={handlePointerEnter}
+					/>
+				</div>
+			{/each}
 		</div>
 	</div>
 </div>

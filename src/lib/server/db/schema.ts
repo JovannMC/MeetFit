@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 // from template, probably not gonna be used
 export const user = sqliteTable('user', {
@@ -22,16 +22,8 @@ export const event = sqliteTable('event', {
 	timezone: text('timezone').notNull(),
 	timeRangeStart: integer('time_range_start').notNull(),
 	timeRangeEnd: integer('time_range_end').notNull(),
-	days: text('days').notNull()
-});
-
-export const attendee = sqliteTable('attendee', {
-	id: text('id').primaryKey(),
-	eventId: text('event_id')
-		.notNull()
-		.references(() => event.id),
-	name: text('name').notNull(),
-	availability: text('availability').notNull()
+	days: text('days').notNull(),
+	attendees: text('attendees') // JSON string storing attendee's name, availability, and password hash - Attendee interface
 });
 
 export type Session = typeof session.$inferSelect;

@@ -1,18 +1,23 @@
+import type { Attendee } from '$lib/common';
 import { db } from '$lib/server/db';
-import { attendee } from '$lib/server/db/schema';
+import { event as eventTable } from '$lib/server/db/schema';
 import { json } from '@sveltejs/kit';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import type { RequestHandler } from './$types';
 
 // Get info of attendee's availability for event
 export const GET: RequestHandler = async ({ params }) => {
 	const eventId = params.id;
-	const attendeeId = params.attendee;
+	const attendeeName = params.attendee;
 
-	const [attendeeData] = await db
-		.select()
-		.from(attendee)
-		.where(and(eq(attendee.eventId, eventId), eq(attendee.id, attendeeId)));
+	const event = db.select().from(eventTable).where(eq(eventTable.id, eventId)).get();
+
+	if (!event) {
+		return json({ error: 'Event not found' }, { status: 404 });
+	}
+
+	const attendees = JSON.parse(event.attendees ?? '[]');
+	const attendeeData = attendees.find((attendee: Attendee) => attendee.name === attendeeName);
 
 	if (!attendeeData) {
 		return json({ error: 'Attendee not found in event' }, { status: 404 });
