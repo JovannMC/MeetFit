@@ -23,7 +23,7 @@ export const event = sqliteTable('event', {
 	timeRangeStart: integer('time_range_start').notNull(),
 	timeRangeEnd: integer('time_range_end').notNull(),
 	days: text('days').notNull(),
-	attendees: text('attendees') // JSON string storing attendee's name, availability, and password hash - Attendee interface
+	attendees: text('attendees') // Attendee interface
 });
 
 export type Session = typeof session.$inferSelect;

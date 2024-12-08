@@ -25,3 +25,33 @@ export const GET: RequestHandler = async ({ params }) => {
 
 	return json({ attendee: attendeeData });
 };
+
+// Update attendee's settings for event
+export const PATCH: RequestHandler = async ({ params, request }) => {
+	const eventId = params.id;
+	const attendeeName = params.attendee;
+	const { availability, timezone } = await request.json();
+
+	const event = db.select().from(eventTable).where(eq(eventTable.id, eventId)).get();
+
+	if (!event) {
+		return json({ error: 'Event not found' }, { status: 404 });
+	}
+
+	const attendees = JSON.parse(event.attendees ?? '[]');
+	const attendeeData = attendees.find((attendee: Attendee) => attendee.name === attendeeName);
+
+	if (!attendeeData) {
+		return json({ error: 'Attendee not found in event' }, { status: 404 });
+	}
+
+	if (availability) attendeeData.availability = availability;
+	if (timezone) attendeeData.timezone = timezone;
+
+	db.update(eventTable)
+		.set({ attendees: JSON.stringify(attendees) })
+		.where(eq(eventTable.id, eventId))
+		.run();
+
+	return json({ success: true });
+};

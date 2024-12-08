@@ -25,7 +25,7 @@
 	});
 
 	async function createEvent() {
-		info('Creating event...');
+		info(`Creating event: ${eventName}`);
 		const response = await fetch('/api/events', {
 			method: 'POST',
 			headers: {
@@ -40,8 +40,8 @@
 			})
 		});
 
-		const result = await response.json();
-		if (result.success) {
+		if (response.ok) {
+			const result = await response.json();
 			info('Event created successfully:', JSON.stringify(result));
 		} else {
 			info('Failed to create event');
@@ -120,7 +120,7 @@
 		</div>
 
 		<!-- Date range -->
-		<div class="col-span-1 rounded bg-surface-800">
+		<div class="col-span-1 rounded border-2 border-primary-500 bg-surface-800">
 			<Calendar {startingDay} bind:selected={selectedDays} />
 		</div>
 

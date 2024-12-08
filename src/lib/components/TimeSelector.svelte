@@ -28,7 +28,7 @@
 		});
 </script>
 
-<div class="flex flex-col items-center justify-center">
+<div class="flex flex-col items-center justify-center" data-day="{year}-{month + 1}-{day}">
 	<div class="flex flex-col items-center">
 		<h1 class="text-2xl">{shortDay}</h1>
 		<h1 class="text-base">{day} {shortMonth} {year}</h1>

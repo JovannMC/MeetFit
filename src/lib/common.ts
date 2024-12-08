@@ -25,6 +25,7 @@ export const months = [
 
 export interface Attendee {
 	name: string;
+	timezone: string;
 	availability: string;
 	passwordHash: string;
 }
