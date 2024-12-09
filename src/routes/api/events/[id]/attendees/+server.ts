@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ params }) => {
 	const event = db.select().from(eventTable).where(eq(eventTable.id, eventId)).get();
 
 	if (!event) {
-		return json({ error: 'Event not found' }, { status: 404 });
+		return json({ message: 'Event not found' }, { status: 404 });
 	}
 
 	// Exclude passwordHash
@@ -33,7 +33,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 	const event = db.select().from(eventTable).where(eq(eventTable.id, eventId)).get();
 
 	if (!event) {
-		return json({ error: 'Event not found' }, { status: 404 });
+		return json({ message: 'Event not found' }, { status: 404 });
 	}
 
 	const attendees = JSON.parse(event.attendees ?? '[]');
@@ -55,7 +55,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			return json({ attendee: attendeeWithoutPasswordHash });
 		} else {
 			// Password provided but doesn't match
-			return json({ error: 'Invalid password' }, { status: 401 });
+			return json({ message: 'Invalid password' }, { status: 401 });
 		}
 	} else {
 		// New attendee

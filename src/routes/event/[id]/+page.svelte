@@ -95,12 +95,15 @@
 				})
 			});
 
+			const result = await response.json();
 			if (response.ok) {
 				info(
 					`Selected times saved successfully for ${username}: ${JSON.stringify(selectedTimesArray)}`
 				);
 			} else {
-				error(`Failed to save selected times for ${username}: ${JSON.stringify(selectedTimesArray)}`);
+				error(
+					`Failed to save selected times for ${username}: ${result.message}`
+				);
 			}
 		}
 	}
@@ -118,12 +121,12 @@
 		}
 	}
 
-	function setTimezone(tz: string) {
+	async function setTimezone(tz: string) {
 		timezone = tz;
 
 		// Save selected timezone to server
 		if (!username || !isAuthenticated) return;
-		fetch(`/api/events/${event?.id}/attendees/${username}`, {
+		const response = await fetch(`/api/events/${event?.id}/attendees/${username}`, {
 			method: 'PATCH',
 			headers: {
 				'Content-Type': 'application/json'
@@ -131,13 +134,15 @@
 			body: JSON.stringify({
 				timezone
 			})
-		}).then((response) => {
-			if (response.ok) {
-				info(`Selected timezone saved successfully for ${username}: ${timezone}`);
-			} else {
-				error('Failed to save selected timezone');
-			}
 		});
+
+		const result = await response.json();
+		if (response.ok) {
+			info(`Timezone saved successfully for ${username}: ${timezone}`);
+		} else {
+			error(`Failed to save timezone for ${username}: ${result.message}`);
+			errorMsg = result.message;
+		}
 	}
 
 	onMount(() => {
@@ -151,6 +156,7 @@
 
 	let username = $state('');
 	let isAuthenticated: boolean | null = $state(null);
+	let errorMsg = $state('');
 	let showNameError = $state(false);
 
 	function handleSubmit(event: Event) {
@@ -180,9 +186,9 @@
 		});
 
 		// TODO: return specific error messages (invalid pass, internal server error, etc)
+		const result = await response.json();
 		if (response.ok) {
-			const result = await response.json();
-			info('Authentication successful:', JSON.stringify(result));
+			info(`Authenticated successfully as ${result.attendee.username}`);
 			isAuthenticated = true;
 
 			if (result.attendee.timezone) {
@@ -214,7 +220,8 @@
 			}
 		} else {
 			isAuthenticated = false;
-			error(`Authentication failed: ${response.statusText}`);
+			error(`Authentication failed: ${result.message}`);
+			errorMsg = result.message;
 		}
 	}
 
@@ -261,12 +268,12 @@
 			</form>
 
 			{#if isAuthenticated === false}
-				<p class="text-red-500">Authentication failed</p>
+				<p class="text-red-500">{errorMsg}</p>
 			{/if}
 		{:else if isAuthenticated}
 			<div class="flex flex-col items-center gap-4">
 				<h2 class="text-3xl font-bold">Welcome, {username}!</h2>
-				<button onclick={() => signout()} class="rounded bg-primary-500 px-4 py-2 text-white"
+				<button onclick={signout} class="rounded bg-primary-500 px-4 py-2 text-white"
 					>Sign out</button
 				>
 			</div>

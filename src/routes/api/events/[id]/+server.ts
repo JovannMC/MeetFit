@@ -13,7 +13,7 @@ export const GET: RequestHandler = async ({ params }) => {
 	const [eventData] = await db.select().from(eventTable).where(eq(eventTable.id, eventId));
 
 	if (!eventData) {
-		return json({ error: 'Event not found' }, { status: 404 });
+		return json({ message: 'Event not found' }, { status: 404 });
 	}
 
 	const attendees = (JSON.parse(eventData.attendees ?? '[]') as Attendee[]).map(
@@ -31,7 +31,7 @@ export const DELETE: RequestHandler = async ({ params }) => {
 	const [eventData] = await db.select().from(eventTable).where(eq(eventTable.id, eventId));
 
 	if (!eventData) {
-		return json({ error: 'Event not found' }, { status: 404 });
+		return json({ message: 'Event not found' }, { status: 404 });
 	}
 
 	await db.delete(eventTable).where(eq(eventTable.id, eventId));

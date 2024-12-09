@@ -18,8 +18,13 @@
 
 	let timeValue = $state([6, 18]);
 
-	// TODO: use later maybe
-	const userId = 0;
+	// TODO: show error msg in UI (notification on bottom right or just show text)
+	let errorMsg = $state('');
+
+	// TODO: use later maybe, for "global" accounts
+	// users = global accounts
+	// attendees = event accounts
+	let userId = 0;
 
 	$effect(() => {
 		info(`Time range: ${timeValue[0]} - ${timeValue[1]}`);
@@ -41,13 +46,14 @@
 			})
 		});
 
+		const result = await response.json();
 		if (response.ok) {
-			const result = await response.json();
 			info('Event created successfully:', JSON.stringify(result));
 
 			goto(`/event/${result.event.id}`);
 		} else {
-			error(`Failed to create event: ${response.statusText}`);
+			error(`Failed to create event: ${result.message}`);
+			errorMsg = result.message;
 		}
 	}
 

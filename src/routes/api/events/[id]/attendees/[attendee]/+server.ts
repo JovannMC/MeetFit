@@ -13,14 +13,14 @@ export const GET: RequestHandler = async ({ params }) => {
 	const event = db.select().from(eventTable).where(eq(eventTable.id, eventId)).get();
 
 	if (!event) {
-		return json({ error: 'Event not found' }, { status: 404 });
+		return json({ message: 'Event not found' }, { status: 404 });
 	}
 
 	const attendees = JSON.parse(event.attendees ?? '[]');
 	const attendeeData = attendees.find((attendee: Attendee) => attendee.name === attendeeName);
 
 	if (!attendeeData) {
-		return json({ error: 'Attendee not found in event' }, { status: 404 });
+		return json({ message: 'Attendee not found in event' }, { status: 404 });
 	}
 
 	return json({ attendee: attendeeData });
@@ -35,14 +35,14 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 	const event = db.select().from(eventTable).where(eq(eventTable.id, eventId)).get();
 
 	if (!event) {
-		return json({ error: 'Event not found' }, { status: 404 });
+		return json({ message: 'Event not found' }, { status: 404 });
 	}
 
 	const attendees = JSON.parse(event.attendees ?? '[]');
 	const attendeeData = attendees.find((attendee: Attendee) => attendee.name === attendeeName);
 
 	if (!attendeeData) {
-		return json({ error: 'Attendee not found in event' }, { status: 404 });
+		return json({ message: 'Attendee not found in event' }, { status: 404 });
 	}
 
 	if (availability) attendeeData.availability = availability;
