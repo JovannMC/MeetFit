@@ -2,7 +2,7 @@
 	import type { Day } from '$lib/common';
 	import TimeSelector from '$lib/components/TimeSelector.svelte';
 	import { onMount } from 'svelte';
-	import { info } from '../../log';
+	import { error, info } from '../../log';
 
 	let { data } = $props();
 
@@ -19,28 +19,41 @@
 	const rangeStart = event?.timeRangeStart ?? 0;
 	const rangeEnd = event?.timeRangeEnd ?? 24;
 
+	info(`Event days count: ${eventDays.length}`);
+
 	/*
 	 * Selection logic
 	 */
 
-	let selectedTimes: { [key: string]: string[] } = $state({});
+	let selectedTimes: { day: string; times: string[] }[] = $state([]);
 
 	function selectTimeSlot(day: Day, time: string) {
 		const key = `${day.year}-${day.month + 1}-${day.day}`;
-		if (!selectedTimes[key]) {
-			selectedTimes[key] = [];
+		let dayObject = selectedTimes.find((d) => d.day === key);
+
+		if (!dayObject) {
+			dayObject = { day: key, times: [] };
+			selectedTimes.push(dayObject);
 		}
-		if (!selectedTimes[key].includes(time)) {
-			selectedTimes[key].push(time);
+
+		if (!dayObject.times.includes(time)) {
+			dayObject.times.push(time);
 		}
+
 		info(`Selected time slot for ${key}: ${time}`);
 	}
 
 	function deselectTimeSlot(day: Day, time: string) {
 		const key = `${day.year}-${day.month + 1}-${day.day}`;
-		if (selectedTimes[key]) {
-			selectedTimes[key] = selectedTimes[key].filter((t) => t !== time);
+		const dayObject = selectedTimes.find((d) => d.day === key);
+
+		if (dayObject) {
+			const index = dayObject.times.indexOf(time);
+			if (index !== -1) {
+				dayObject.times.splice(index, 1);
+			}
 		}
+
 		info(`Deselected time slot for ${key}: ${time}`);
 	}
 
@@ -62,33 +75,33 @@
 	}
 
 	async function handlePointerUp() {
-		if (!isDragging || !isSelecting) return;
 		isDragging = false;
-		isSelecting = false;
+		if (isSelecting) {
+			isSelecting = false;
+			// Save selected times to server
+			if (!username || !isAuthenticated) return;
+			const selectedTimesArray = selectedTimes.map(({ day, times }) => ({
+				day,
+				times
+			}));
 
-		// Save selected times to server
-		if (!username || !isAuthenticated) return;
-		const selectedTimesArray = Object.entries(selectedTimes).map(([key, value]) => ({
-			day: key,
-			times: value
-		}));
+			const response = await fetch(`/api/events/${event?.id}/attendees/${username}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					availability: selectedTimesArray
+				})
+			});
 
-		const response = await fetch(`/api/events/${event?.id}/attendees/${username}`, {
-			method: 'PATCH',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				availability: selectedTimesArray
-			})
-		});
-
-		if (response.ok) {
-			info(
-				`Selected times saved successfully for ${username}: ${JSON.stringify(selectedTimesArray)}`
-			);
-		} else {
-			info('Failed to save selected times');
+			if (response.ok) {
+				info(
+					`Selected times saved successfully for ${username}: ${JSON.stringify(selectedTimesArray)}`
+				);
+			} else {
+				error(`Failed to save selected times for ${username}: ${JSON.stringify(selectedTimesArray)}`);
+			}
 		}
 	}
 
@@ -105,15 +118,11 @@
 		}
 	}
 
-	onMount(() => {
-		// Handles pointer up event outside of the time selectors
-		window.addEventListener('pointerup', handlePointerUp);
-	});
+	function setTimezone(tz: string) {
+		timezone = tz;
 
-	$effect(() => {
 		// Save selected timezone to server
 		if (!username || !isAuthenticated) return;
-		info(`Saving selected timezone for ${username}: ${timezone}`);
 		fetch(`/api/events/${event?.id}/attendees/${username}`, {
 			method: 'PATCH',
 			headers: {
@@ -124,11 +133,16 @@
 			})
 		}).then((response) => {
 			if (response.ok) {
-				info('Selected timezone saved successfully');
+				info(`Selected timezone saved successfully for ${username}: ${timezone}`);
 			} else {
-				info('Failed to save selected timezone');
+				error('Failed to save selected timezone');
 			}
 		});
+	}
+
+	onMount(() => {
+		// Handles pointer up event outside of the time selectors
+		window.addEventListener('pointerup', handlePointerUp);
 	});
 
 	/*
@@ -172,18 +186,21 @@
 			isAuthenticated = true;
 
 			if (result.attendee.timezone) {
+				info(`Attendee timezone: ${result.attendee.timezone}`);
 				timezone = result.attendee.timezone;
-				info(`Attendee timezone: ${timezone}`);
+			} else {
+				info('No timezone found for attendee');
+				setTimezone(timezone);
 			}
+
 			if (result.attendee.availability) {
 				selectedTimes = result.attendee.availability;
-				info(`Attendee selected times: ${JSON.stringify(selectedTimes)}`);
-			
+
 				for (const [_, value] of Object.entries(selectedTimes)) {
 					const json = value as unknown as { day: string; times: string[] };
+					info(`Day: ${json.day}, times: ${json.times}`);
 					const day = json.day;
 					const times = json.times;
-					info(`Day: ${day}, times: ${times}`);
 					const dayElement = document.querySelector(`[data-day="${day}"]`);
 					if (dayElement) {
 						for (const time of times) {
@@ -197,16 +214,17 @@
 			}
 		} else {
 			isAuthenticated = false;
+			error(`Authentication failed: ${response.statusText}`);
 		}
 	}
 
-	// TODO: somehow link the elements and time slots together, so i dont have to remove from selectedTimes and search for the element (make a method / map)
+	// TODO: somehow link the elements and time slots together, so i don't have to remove from selectedTimes and search for the element (make a method / map)
 	function signout() {
 		isAuthenticated = null;
 		username = '';
 
 		// reset selected times
-		selectedTimes = {};
+		selectedTimes = [];
 
 		// set all time slots to unselected
 		const timeSlotElements = document.querySelectorAll('.bg-tertiary-300');
@@ -248,9 +266,8 @@
 		{:else if isAuthenticated}
 			<div class="flex flex-col items-center gap-4">
 				<h2 class="text-3xl font-bold">Welcome, {username}!</h2>
-				<button
-					onclick={() => signout}
-					class="rounded bg-primary-500 px-4 py-2 text-white">Sign out</button
+				<button onclick={() => signout()} class="rounded bg-primary-500 px-4 py-2 text-white"
+					>Sign out</button
 				>
 			</div>
 		{/if}
@@ -263,7 +280,8 @@
 			<label class="text-xl" for="timezone">Time zone:</label>
 			<select
 				name="timezone"
-				bind:value={timezone}
+				value={timezone}
+				onchange={(e) => setTimezone((e.target as HTMLSelectElement).value ?? '')}
 				class="w-full rounded border border-gray-300 p-2"
 			>
 				{#each filteredTimezones as tz}

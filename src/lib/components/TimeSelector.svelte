@@ -13,9 +13,6 @@
 
 	// Calculate amount of time slots
 	const timeSlots = (rangeEnd - rangeStart + 0.5) / 0.5;
-	info(`Time slots: ${timeSlots}`);
-	info(`Range start: ${rangeStart}`);
-	info(`Range end: ${rangeEnd}`);
 
 	// Calculate times for each time slot
 	const timeSlotTimes = Array(timeSlots)
@@ -26,6 +23,8 @@
 			let minutes = (time - hours) * 60;
 			return `${hours}:${minutes === 0 ? '00' : minutes}`;
 		});
+
+	info(`Time slot count for ${year}-${month + 1}-${day}: ${timeSlots}`);
 </script>
 
 <div class="flex flex-col items-center justify-center" data-day="{year}-{month + 1}-{day}">
@@ -44,7 +43,7 @@
 						aria-label={timeSlot}
 						onclick={() => selected(dayObject, timeSlot)}
 						onpointerdown={(e) => onpointerdown(e, dayObject, timeSlot)}
-						onpointerup={onpointerup}
+						{onpointerup}
 						onpointerenter={(e) => onpointerenter(e, dayObject, timeSlot)}
 					></button>
 				</div>

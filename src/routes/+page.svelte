@@ -3,7 +3,7 @@
 	import { days, type Day } from '$lib/common';
 	import Calendar from '$lib/components/Calendar.svelte';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
-	import { info } from './log';
+	import { error, info } from './log';
 
 	const timezones = Intl.supportedValuesOf('timeZone');
 	const filteredTimezones = timezones.filter(
@@ -47,7 +47,7 @@
 
 			goto(`/event/${result.event.id}`);
 		} else {
-			info('Failed to create event');
+			error(`Failed to create event: ${response.statusText}`);
 		}
 	}
 

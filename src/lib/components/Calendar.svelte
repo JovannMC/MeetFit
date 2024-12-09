@@ -150,11 +150,9 @@
 						if (isSelecting) {
 							select(day);
 							dayElement.classList.add('!bg-primary-800');
-							info(`Selecting ${day.year}/${day.month + 1}/${day.day}`);
 						} else {
 							deselect(day);
 							dayElement.classList.remove('!bg-primary-800');
-							info(`Deselecting ${day.year}/${day.month + 1}/${day.day}`);
 						}
 					}
 				}
