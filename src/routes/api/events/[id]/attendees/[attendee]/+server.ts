@@ -53,5 +53,5 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
 		.where(eq(eventTable.id, eventId))
 		.run();
 
-	return json({ success: true });
+	return json({ attendee: attendeeData });
 };

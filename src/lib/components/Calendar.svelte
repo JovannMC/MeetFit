@@ -3,7 +3,8 @@
 	import { onMount } from 'svelte';
 	import { info } from '../../routes/log';
 
-	let { startingDay = 'Monday', selected = $bindable() } : { startingDay: string, selected: Day[] } = $props();
+	let { startingDay = 'Monday', selected = $bindable() }: { startingDay: string; selected: Day[] } =
+		$props();
 
 	const date = new Date();
 	let month = $state(date.getMonth());
@@ -115,9 +116,14 @@
 	}
 
 	function handlePointerUp() {
-		isDragging = false;
 		isSelecting = false;
-		info(`Selected days: ${selected.map((day: Day) => `${day.year}/${day.month + 1}/${day.day}`).join(', ')}`);
+
+		if (isDragging) {
+			info(
+				`Selected days: ${selected.map((day: Day) => `${day.year}/${day.month + 1}/${day.day}`).join(', ')}`
+			);
+			isDragging = false;
+		}
 	}
 
 	function handlePointerEnter(event: any) {

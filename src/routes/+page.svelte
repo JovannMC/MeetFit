@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { days, type Day } from '$lib/common';
 	import Calendar from '$lib/components/Calendar.svelte';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
@@ -43,18 +44,23 @@
 		if (response.ok) {
 			const result = await response.json();
 			info('Event created successfully:', JSON.stringify(result));
+
+			goto(`/event/${result.event.id}`);
 		} else {
 			info('Failed to create event');
 		}
 	}
 
 	let apiEndpoint = $state('/api/events');
+	let apiResponse = $state({});
 
 	async function checkAPIResponse() {
 		info(`Checking API response for: ${apiEndpoint}`);
 		const response = await fetch(`${apiEndpoint}`);
 		const result = await response.json();
 		info('API response:', JSON.stringify(result));
+
+		apiResponse = result;
 	}
 </script>
 
@@ -143,6 +149,9 @@
 			<button class="rounded bg-primary-800 p-2 text-white" onclick={checkAPIResponse}
 				>Check API</button
 			>
+			{#if apiResponse}
+				<pre class="whitespace-pre-wrap text-left">{JSON.stringify(apiResponse, null, 2)}</pre>
+			{/if}
 		</div>
 	</div>
 </div>

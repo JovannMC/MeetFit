@@ -48,14 +48,14 @@ export const POST: RequestHandler = async ({ params, request }) => {
 		) {
 			// Password provided and matches
 			const { passwordHash, ...attendeeWithoutPasswordHash } = existingAttendee;
-			return json({ success: true, attendee: attendeeWithoutPasswordHash });
+			return json({ attendee: attendeeWithoutPasswordHash });
 		} else if (!password && !existingAttendee.passwordHash) {
 			// No password provided and no password set for attendee
 			const { passwordHash, ...attendeeWithoutPasswordHash } = existingAttendee;
-			return json({ success: true, attendee: attendeeWithoutPasswordHash });
+			return json({ attendee: attendeeWithoutPasswordHash });
 		} else {
 			// Password provided but doesn't match
-			return json({ error: 'Invalid password', success: false }, { status: 401 });
+			return json({ error: 'Invalid password' }, { status: 401 });
 		}
 	} else {
 		// New attendee
@@ -69,6 +69,6 @@ export const POST: RequestHandler = async ({ params, request }) => {
 			.where(eq(eventTable.id, eventId));
 
 		const { passwordHash, ...attendeeWithoutPasswordHash } = newAttendee;
-		return json({ success: true, attendee: attendeeWithoutPasswordHash });
+		return json({ attendee: attendeeWithoutPasswordHash });
 	}
 };

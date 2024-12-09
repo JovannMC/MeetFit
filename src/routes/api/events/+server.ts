@@ -17,7 +17,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	await db.insert(event).values(newEvent);
 
-	return json({ success: true, event: newEvent });
+	return json({ event: newEvent });
 };
 
 export const GET: RequestHandler = async () => {
