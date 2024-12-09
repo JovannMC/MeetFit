@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { Attendee } from '$lib/common';
 import { db } from '$lib/server/db';
 import { event } from '$lib/server/db/schema';
 import { json } from '@sveltejs/kit';
@@ -25,5 +27,13 @@ export const GET: RequestHandler = async () => {
 	// or stats?
 	const events = await db.select().from(event);
 
-	return json({ events });
+	// Exclude "passwordHash"
+	const sanitizedEvents = events.map((event) => {
+		const attendees = (JSON.parse(event.attendees ?? '[]') as Attendee[]).map(
+			({ passwordHash, ...attendee }) => attendee
+		);
+		return { ...event, attendees: JSON.stringify(attendees) };
+	});
+
+	return json({ events: sanitizedEvents });
 };

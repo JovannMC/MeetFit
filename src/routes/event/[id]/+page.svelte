@@ -188,7 +188,7 @@
 		// TODO: return specific error messages (invalid pass, internal server error, etc)
 		const result = await response.json();
 		if (response.ok) {
-			info(`Authenticated successfully as ${result.attendee.username}`);
+			info(`Authenticated successfully as ${result.attendee.name}`);
 			isAuthenticated = true;
 
 			if (result.attendee.timezone) {
