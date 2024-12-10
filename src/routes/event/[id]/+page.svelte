@@ -101,9 +101,7 @@
 					`Selected times saved successfully for ${username}: ${JSON.stringify(selectedTimesArray)}`
 				);
 			} else {
-				error(
-					`Failed to save selected times for ${username}: ${result.message}`
-				);
+				error(`Failed to save selected times for ${username}: ${result.message}`);
 			}
 		}
 	}
@@ -300,20 +298,14 @@
 
 	<div class="flex flex-col items-center gap-2">
 		<h2 class="text-3xl font-bold">Days</h2>
-		<div class="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
-			{#each eventDays as day}
-				<div class="rounded bg-gray-500 p-4">
-					<TimeSelector
-						dayObject={day}
-						{rangeStart}
-						{rangeEnd}
-						selected={(day: Day, time: string) => selectTimeSlot(day, time)}
-						onpointerdown={handlePointerDown}
-						onpointerup={handlePointerUp}
-						onpointerenter={handlePointerEnter}
-					/>
-				</div>
-			{/each}
-		</div>
+		<TimeSelector
+			days={eventDays}
+			{rangeStart}
+			{rangeEnd}
+			selected={(day: Day, time: string) => selectTimeSlot(day, time)}
+			onpointerdown={handlePointerDown}
+			onpointerup={handlePointerUp}
+			onpointerenter={handlePointerEnter}
+		/>
 	</div>
 </div>
