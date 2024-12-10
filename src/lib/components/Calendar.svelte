@@ -93,6 +93,7 @@
 
 	let isDragging = false;
 	let isSelecting = false;
+	let isDeselecting = false;
 	let startDrag: Day;
 	let startDragIndex: number;
 
@@ -104,11 +105,13 @@
 		const classList = event.target.classList;
 		if (classList.contains('!bg-primary-800')) {
 			isSelecting = false;
+			isDeselecting = true;
 			deselect(startDrag);
 			classList.remove('!bg-primary-800');
 			info(`Starting deselection from ${startDrag.year}/${startDrag.month + 1}/${startDrag.day}`);
 		} else {
 			isSelecting = true;
+			isDeselecting = false;
 			select(startDrag);
 			classList.add('!bg-primary-800');
 			info(`Starting selection from ${startDrag.year}/${startDrag.month + 1}/${startDrag.day}`);
@@ -117,6 +120,7 @@
 
 	function handlePointerUp() {
 		isSelecting = false;
+		isDeselecting = false;
 
 		if (isDragging) {
 			info(

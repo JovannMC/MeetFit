@@ -61,16 +61,19 @@
 
 	let isDragging = false;
 	let isSelecting = false;
+	let isDeselecting = false;
 
 	function handlePointerDown(event: any, day: Day, time: string) {
 		isDragging = true;
 		const classList = event.target.classList;
 		if (classList.contains('bg-tertiary-300')) {
 			isSelecting = false;
+			isDeselecting = true;
 			deselectTimeSlot(day, time);
 			classList.remove('bg-tertiary-300');
 		} else {
 			isSelecting = true;
+			isDeselecting = false;
 			selectTimeSlot(day, time);
 			classList.add('bg-tertiary-300');
 		}
@@ -78,8 +81,9 @@
 
 	async function handlePointerUp() {
 		isDragging = false;
-		if (isSelecting) {
+		if (isSelecting || isDeselecting) {
 			isSelecting = false;
+			isDeselecting = false;
 			// Save selected times to server
 			if (!username || !isAuthenticated) return;
 			const selectedTimesArray = selectedTimes.map(({ day, times }) => ({
