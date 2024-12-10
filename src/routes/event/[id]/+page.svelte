@@ -112,6 +112,7 @@
 		}
 	}
 
+    // TODO: click and drag selection box/rectangle like Calendar.svelte
 	function handlePointerEnter(event: any, day: Day, time: string) {
 		if (isDragging) {
 			const classList = event.target.classList;
@@ -171,12 +172,11 @@
 		authenticate(username, password);
 	}
 
-	// i don't think this is how i should authenticate lmao, i should move this to server
 	async function authenticate(username: string, password: string) {
 		showNameError = false;
 		isAuthenticated = null;
 		if (!username) {
-			info('Username is required');
+			error('Username is required');
 			showNameError = true;
 			return;
 		}
@@ -238,6 +238,7 @@
 		selectedTimes = [];
 
 		// set all time slots to unselected
+        // TODO: change this to a unique class and not just all bg-tertiary-300
 		const timeSlotElements = document.querySelectorAll('.bg-tertiary-300');
 		timeSlotElements.forEach((element) => element.classList.remove('bg-tertiary-300'));
 	}

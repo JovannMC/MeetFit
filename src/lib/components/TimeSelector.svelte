@@ -58,7 +58,7 @@
 				<div class="flex flex-col items-center">
 					{#each timeSlotTimes as timeSlot}
 						<button
-							class="h-7 w-16 border-2 border-secondary-500 bg-primary-500"
+							class="time-slot h-7 w-16 border-2 border-secondary-500 bg-primary-500"
 							aria-label={timeSlot}
 							onclick={() => selected(dayObject, timeSlot)}
 							onpointerdown={(e) => onpointerdown(e, dayObject, timeSlot)}

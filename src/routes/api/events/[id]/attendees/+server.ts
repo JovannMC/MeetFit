@@ -28,7 +28,7 @@ export const GET: RequestHandler = async ({ params }) => {
 // Add new attendee or log in to an existing attendee
 export const POST: RequestHandler = async ({ params, request }) => {
 	const eventId = params.id;
-	const { username, availability, password } = await request.json();
+	const { username, password } = await request.json();
 
 	const event = db.select().from(eventTable).where(eq(eventTable.id, eventId)).get();
 
@@ -60,7 +60,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
 	} else {
 		// New attendee
 		const pswdHash = password ? bcrypt.hashSync(password, 10) : null;
-		const newAttendee = { name: username, availability, passwordHash: pswdHash };
+		const newAttendee = { name: username, passwordHash: pswdHash };
 		attendees.push(newAttendee);
 
 		await db
