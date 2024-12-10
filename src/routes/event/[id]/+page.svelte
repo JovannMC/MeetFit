@@ -25,7 +25,7 @@
 	 * Selection logic
 	 */
 
-	let selectedTimes: { day: string; times: string[] }[] = $state([]);
+	let selectedTimes: { day: string; times: string[] }[] = [];
 
 	function selectTimeSlot(day: Day, time: string) {
 		const key = `${day.year}-${day.month + 1}-${day.day}`;
@@ -33,11 +33,12 @@
 
 		if (!dayObject) {
 			dayObject = { day: key, times: [] };
-			selectedTimes.push(dayObject);
+			selectedTimes = [...selectedTimes, dayObject];
 		}
 
 		if (!dayObject.times.includes(time)) {
-			dayObject.times.push(time);
+			dayObject.times = [...dayObject.times, time];
+			selectedTimes = [...selectedTimes];
 		}
 
 		info(`Selected time slot for ${key}: ${time}`);
@@ -50,7 +51,8 @@
 		if (dayObject) {
 			const index = dayObject.times.indexOf(time);
 			if (index !== -1) {
-				dayObject.times.splice(index, 1);
+				dayObject.times = [...dayObject.times.slice(0, index), ...dayObject.times.slice(index + 1)];
+				selectedTimes = [...selectedTimes];
 			}
 		}
 
