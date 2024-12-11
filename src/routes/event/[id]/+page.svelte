@@ -66,16 +66,16 @@
 	function handlePointerDown(event: any, day: Day, time: string) {
 		isDragging = true;
 		const classList = event.target.classList;
-		if (classList.contains('bg-tertiary-300')) {
+		if (classList.contains('selected')) {
 			isSelecting = false;
 			isDeselecting = true;
 			deselectTimeSlot(day, time);
-			classList.remove('bg-tertiary-300');
+			classList.remove('selected');
 		} else {
 			isSelecting = true;
 			isDeselecting = false;
 			selectTimeSlot(day, time);
-			classList.add('bg-tertiary-300');
+			classList.add('selected');
 		}
 	}
 
@@ -118,10 +118,10 @@
 			const classList = event.target.classList;
 			if (isSelecting) {
 				selectTimeSlot(day, time);
-				classList.add('bg-tertiary-300');
+				classList.add('selected');
 			} else {
 				deselectTimeSlot(day, time);
-				classList.remove('bg-tertiary-300');
+				classList.remove('selected');
 			}
 		}
 	}
@@ -216,7 +216,7 @@
 						for (const time of times) {
 							const timeSlotElement = dayElement.querySelector(`[aria-label="${time}"]`);
 							if (timeSlotElement) {
-								timeSlotElement.classList.add('bg-tertiary-300');
+								timeSlotElement.classList.add('selected');
 							}
 						}
 					}
@@ -238,9 +238,8 @@
 		selectedTimes = [];
 
 		// set all time slots to unselected
-        // TODO: change this to a unique class and not just all bg-tertiary-300
-		const timeSlotElements = document.querySelectorAll('.bg-tertiary-300');
-		timeSlotElements.forEach((element) => element.classList.remove('bg-tertiary-300'));
+		const timeSlotElements = document.querySelectorAll('.selected');
+		timeSlotElements.forEach((element) => element.classList.remove('selected'));
 	}
 </script>
 

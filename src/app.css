@@ -6,3 +6,7 @@ input,
 select {
 	@apply text-surface-700;
 }
+
+.selected {
+	@apply bg-tertiary-300;
+}
