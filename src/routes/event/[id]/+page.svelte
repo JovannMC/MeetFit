@@ -16,6 +16,7 @@
 	let timezone = $state(currentTimezone);
 
 	const eventDays: Day[] = JSON.parse(event?.days ?? '[]');
+	const availabilities = JSON.parse(event?.attendees ?? '[]');
 	const rangeStart = event?.timeRangeStart ?? 0;
 	const rangeEnd = event?.timeRangeEnd ?? 24;
 
@@ -25,6 +26,7 @@
 	 * Selection logic
 	 */
 
+	// TODO: move this logic to TimeSelector component
 	let selectedTimes: { day: string; times: string[] }[] = [];
 
 	function selectTimeSlot(day: Day, time: string) {
@@ -112,7 +114,7 @@
 		}
 	}
 
-    // TODO: click and drag selection box/rectangle like Calendar.svelte
+	// TODO: click and drag selection box/rectangle like Calendar.svelte
 	function handlePointerEnter(event: any, day: Day, time: string) {
 		if (isDragging) {
 			const classList = event.target.classList;
@@ -302,10 +304,13 @@
 		</div>
 	</div>
 
-	<div class="flex flex-col items-center gap-2">
-		<h2 class="text-3xl font-bold">Days</h2>
+	<div
+		class="flex flex-col items-center gap-2 rounded border-2 border-primary-500 bg-gray-500 p-8 pr-16"
+	>
+		<h2 class="text-3xl font-bold ml-8 mb-4">Days</h2>
 		<TimeSelector
 			days={eventDays}
+			availabilityData={availabilities}
 			{rangeStart}
 			{rangeEnd}
 			selected={(day: Day, time: string) => selectTimeSlot(day, time)}
