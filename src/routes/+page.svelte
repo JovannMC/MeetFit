@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { fetchHelper } from '$lib/api';
+	import { addEvent, fetchHelper } from '$lib/api';
 	import { days, type Day } from '$lib/common';
 	import Calendar from '$lib/components/Calendar.svelte';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
@@ -33,7 +33,7 @@
 
 	async function createEvent() {
 		info(`Creating event: ${eventName}`);
-		const result = await fetchHelper('/api/events', 'POST', {
+		const result = await addEvent({
 			name: eventName,
 			timezone,
 			timeRangeStart: timeValue[0],

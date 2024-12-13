@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fetchHelper } from '$lib/api';
+	import { getAttendees, signinAttendee, updateAttendee } from '$lib/api';
 	import type { Day } from '$lib/common';
 	import TimeSelector from '$lib/components/TimeSelector.svelte';
 	import { onMount } from 'svelte';
@@ -91,17 +91,16 @@
 			isDeselecting = false;
 			// Save selected times to server
 			if (!username || !isAuthenticated) return;
-			const selectedTimesArray = selectedTimes.map(({ day, times }) => ({
+			const id = event?.id ?? '';
+			const availability = selectedTimes.map(({ day, times }) => ({
 				day,
 				times
 			}));
 
-			const result = await fetchHelper(`/api/events/${event?.id}/attendees/${username}`, 'PATCH', {
-				availability: selectedTimesArray
-			});
-			
+			const result = await updateAttendee(id, username, { availability });
+
 			if (result) {
-				info(`Selected times saved successfully for ${username}: ${JSON.stringify(selectedTimesArray)}`);
+				info(`Selected times saved successfully for ${username}: ${JSON.stringify(availability)}`);
 			} else {
 				error(`Failed to save selected times for ${username}: ${result.message}`);
 			}
@@ -128,10 +127,9 @@
 
 		// Save selected timezone to server
 		if (!username || !isAuthenticated) return;
-		const result = await fetchHelper(`/api/events/${event?.id}/attendees/${username}`, 'PATCH', {
-			timezone
-		});
-		
+		const id = event?.id ?? '';
+		const result = await updateAttendee(id, username, { timezone });
+
 		if (result) {
 			info(`Timezone saved successfully for ${username}: ${timezone}`);
 		} else {
@@ -171,16 +169,13 @@
 			return;
 		}
 
-		const result = await fetchHelper(`/api/events/${event?.id}/attendees`, 'POST', {
-			username,
-			password
-		});
-		
+		const result = await signinAttendee(event?.id ?? '', username, password);
+
 		// TODO: return specific error messages (invalid pass, internal server error, etc)
 		if (result) {
 			info(`Authenticated successfully as ${result.attendee.name}`);
 			isAuthenticated = true;
-		
+
 			// Remove heatmap visualization
 			const timeSlots = document.querySelectorAll('.time-slot');
 			timeSlots.forEach((slot) => {
@@ -190,7 +185,7 @@
 					}
 				});
 			});
-		
+
 			if (result.attendee.timezone) {
 				info(`Attendee timezone: ${result.attendee.timezone}`);
 				timezone = result.attendee.timezone;
@@ -198,10 +193,10 @@
 				info('No timezone found for attendee');
 				setTimezone(timezone);
 			}
-		
+
 			if (result.attendee.availability) {
 				selectedTimes = result.attendee.availability;
-		
+
 				for (const [_, value] of Object.entries(selectedTimes)) {
 					const json = value as unknown as { day: string; times: string[] };
 					info(`Day: ${json.day}, times: ${json.times}`);
@@ -237,11 +232,11 @@
 		const timeSlotElements = document.querySelectorAll('.selected');
 		timeSlotElements.forEach((element) => element.classList.remove('selected'));
 
-		await updateData()
+		await updateData();
 	}
 
 	async function updateData() {
-		const result = await fetchHelper(`/api/events/${event?.id}/attendees`, 'GET');
+		const result = await getAttendees(event?.id ?? '');
 		if (result) {
 			availabilities = result.attendees ?? [];
 			timeSelector.loadHeatmapData();
@@ -313,7 +308,7 @@
 	<div
 		class="flex flex-col items-center gap-2 rounded border-2 border-primary-500 bg-gray-500 p-8 pr-16"
 	>
-		<h2 class="text-3xl font-bold ml-8 mb-4">Days</h2>
+		<h2 class="mb-4 ml-8 text-3xl font-bold">Days</h2>
 		<TimeSelector
 			days={eventDays}
 			availabilityData={availabilities}
