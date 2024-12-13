@@ -1,9 +1,19 @@
 <script lang="ts">
+	import { updateAttendee } from '$lib/api';
 	import type { Day } from '$lib/common';
-	import { info } from '../../routes/log';
+	import { onMount } from 'svelte';
+	import { error, info } from '../../routes/log';
 
-	let { days, availabilityData, rangeStart, rangeEnd, onpointerdown, onpointerup, onpointerenter } =
-		$props();
+	let {
+		days,
+		availabilityData,
+		rangeStart,
+		rangeEnd,
+		selectedTimes = $bindable(),
+		isAuthenticated = $bindable(),
+		username = $bindable(),
+		eventId = $bindable()
+	} = $props();
 
 	// intentionally unused. this is so tailwind can generate the css for these colours as it doesn't detect if it's dynamically loaded
 	// this would lead to the colours not being generated in the final css file by tailwind
@@ -48,6 +58,10 @@
 			}
 		)} '${String(dayObject.year).slice(2)}`;
 
+	/*
+	 * Heatmap logic
+	 */
+
 	let heatmapData: { [key: string]: { [key: string]: number | string } } = $state({});
 
 	export function loadHeatmapData() {
@@ -91,6 +105,107 @@
 	}
 
 	loadHeatmapData();
+
+	/*
+	 * Time selection logic
+	 */
+
+	function selectTimeSlot(day: Day, time: string) {
+		const key = `${day.year}-${day.month + 1}-${day.day}`;
+		let dayObject = selectedTimes.find((d: { day: string }) => d.day === key);
+
+		if (!dayObject) {
+			dayObject = { day: key, times: [] };
+			selectedTimes = [...selectedTimes, dayObject];
+		}
+
+		if (!dayObject.times.includes(time)) {
+			dayObject.times = [...dayObject.times, time];
+			selectedTimes = [...selectedTimes];
+		}
+
+		info(`Selected time slot for ${key}: ${time}`);
+	}
+
+	function deselectTimeSlot(day: Day, time: string) {
+		const key = `${day.year}-${day.month + 1}-${day.day}`;
+		const dayObject = selectedTimes.find((d: { day: string }) => d.day === key);
+
+		if (dayObject) {
+			const index = dayObject.times.indexOf(time);
+			if (index !== -1) {
+				dayObject.times = [...dayObject.times.slice(0, index), ...dayObject.times.slice(index + 1)];
+				selectedTimes = [...selectedTimes];
+			}
+		}
+
+		info(`Deselected time slot for ${key}: ${time}`);
+	}
+
+	let isDragging = false;
+	let isSelecting = false;
+	let isDeselecting = false;
+
+	function handlePointerDown(event: any, day: Day, time: string) {
+		if (!isAuthenticated) return;
+		isDragging = true;
+		const classList = event.target.classList;
+		if (classList.contains('selected')) {
+			isSelecting = false;
+			isDeselecting = true;
+			deselectTimeSlot(day, time);
+			classList.remove('selected');
+		} else {
+			isSelecting = true;
+			isDeselecting = false;
+			selectTimeSlot(day, time);
+			classList.add('selected');
+		}
+	}
+
+	async function handlePointerUp() {
+		isDragging = false;
+		if (isSelecting || isDeselecting) {
+			isSelecting = false;
+			isDeselecting = false;
+			// Save selected times to server
+			if (!username || !isAuthenticated) return;
+			const availability = selectedTimes.map(
+				({ day, times }: { day: string; times: string[] }) => ({
+					day,
+					times
+				})
+			);
+
+			const result = await updateAttendee(eventId, username, { availability });
+
+			if (result) {
+				info(`Selected times saved successfully for ${username}: ${JSON.stringify(availability)}`);
+			} else {
+				error(`Failed to save selected times for ${username}: ${result.message}`);
+			}
+		}
+	}
+
+	// TODO: click and drag selection box/rectangle like Calendar.svelte
+	function handlePointerEnter(event: any, day: Day, time: string) {
+		if (!isAuthenticated) return;
+		if (isDragging) {
+			const classList = event.target.classList;
+			if (isSelecting) {
+				selectTimeSlot(day, time);
+				classList.add('selected');
+			} else {
+				deselectTimeSlot(day, time);
+				classList.remove('selected');
+			}
+		}
+	}
+
+	onMount(() => {
+		// Handles pointer up event outside of the time selectors
+		window.addEventListener('pointerup', handlePointerUp);
+	});
 </script>
 
 <div class="flex flex-row">
@@ -139,9 +254,9 @@
 										dayObject.year + '-' + (dayObject.month + 1) + '-' + dayObject.day
 									]?.[timeSlot] ?? 'bg-gray-500'}"
 									aria-label={timeSlot}
-									onpointerdown={(e) => onpointerdown(e, dayObject, timeSlot)}
-									{onpointerup}
-									onpointerenter={(e) => onpointerenter(e, dayObject, timeSlot)}
+									onpointerdown={(e) => handlePointerDown(e, dayObject, timeSlot)}
+									onpointerup={handlePointerUp}
+									onpointerenter={(e) => handlePointerEnter(e, dayObject, timeSlot)}
 								></button>
 							{/key}
 							{#if (i + 1) % 2 === 0 && (i + 1) % 4 !== 0}

@@ -2,133 +2,36 @@
 	import { getAttendees, signinAttendee, updateAttendee } from '$lib/api';
 	import type { Day } from '$lib/common';
 	import TimeSelector from '$lib/components/TimeSelector.svelte';
-	import { onMount } from 'svelte';
 	import { error, info } from '../../log';
 
 	let { data } = $props();
 	let timeSelector: any;
 
 	const event = data.props?.event;
+	const eventId = event?.id ?? '';
 
 	const timezones = Intl.supportedValuesOf('timeZone');
 	const filteredTimezones = timezones.filter(
 		(timezone) => timezone.includes('/') && !timezone.includes('Etc')
 	);
 	const currentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-	let timezone = $state(currentTimezone);
 
 	const eventDays: Day[] = JSON.parse(event?.days ?? '[]');
-	let availabilities = $state(JSON.parse(event?.attendees ?? '[]'));
 	const rangeStart = event?.timeRangeStart ?? 0;
 	const rangeEnd = event?.timeRangeEnd ?? 24;
 
+	let availabilities = $state(JSON.parse(event?.attendees ?? '[]'));
+	let selectedTimes: { day: string; times: string[] }[] = $state([]);
+	let timezone = $state(currentTimezone);
+
 	info(`Event days count: ${eventDays.length}`);
-
-	/*
-	 * Selection logic
-	 */
-
-	// TODO: move this logic to TimeSelector component
-	let selectedTimes: { day: string; times: string[] }[] = [];
-
-	function selectTimeSlot(day: Day, time: string) {
-		const key = `${day.year}-${day.month + 1}-${day.day}`;
-		let dayObject = selectedTimes.find((d) => d.day === key);
-
-		if (!dayObject) {
-			dayObject = { day: key, times: [] };
-			selectedTimes = [...selectedTimes, dayObject];
-		}
-
-		if (!dayObject.times.includes(time)) {
-			dayObject.times = [...dayObject.times, time];
-			selectedTimes = [...selectedTimes];
-		}
-
-		info(`Selected time slot for ${key}: ${time}`);
-	}
-
-	function deselectTimeSlot(day: Day, time: string) {
-		const key = `${day.year}-${day.month + 1}-${day.day}`;
-		const dayObject = selectedTimes.find((d) => d.day === key);
-
-		if (dayObject) {
-			const index = dayObject.times.indexOf(time);
-			if (index !== -1) {
-				dayObject.times = [...dayObject.times.slice(0, index), ...dayObject.times.slice(index + 1)];
-				selectedTimes = [...selectedTimes];
-			}
-		}
-
-		info(`Deselected time slot for ${key}: ${time}`);
-	}
-
-	let isDragging = false;
-	let isSelecting = false;
-	let isDeselecting = false;
-
-	function handlePointerDown(event: any, day: Day, time: string) {
-		if (!isAuthenticated) return;
-		isDragging = true;
-		const classList = event.target.classList;
-		if (classList.contains('selected')) {
-			isSelecting = false;
-			isDeselecting = true;
-			deselectTimeSlot(day, time);
-			classList.remove('selected');
-		} else {
-			isSelecting = true;
-			isDeselecting = false;
-			selectTimeSlot(day, time);
-			classList.add('selected');
-		}
-	}
-
-	async function handlePointerUp() {
-		isDragging = false;
-		if (isSelecting || isDeselecting) {
-			isSelecting = false;
-			isDeselecting = false;
-			// Save selected times to server
-			if (!username || !isAuthenticated) return;
-			const id = event?.id ?? '';
-			const availability = selectedTimes.map(({ day, times }) => ({
-				day,
-				times
-			}));
-
-			const result = await updateAttendee(id, username, { availability });
-
-			if (result) {
-				info(`Selected times saved successfully for ${username}: ${JSON.stringify(availability)}`);
-			} else {
-				error(`Failed to save selected times for ${username}: ${result.message}`);
-			}
-		}
-	}
-
-	// TODO: click and drag selection box/rectangle like Calendar.svelte
-	function handlePointerEnter(event: any, day: Day, time: string) {
-		if (!isAuthenticated) return;
-		if (isDragging) {
-			const classList = event.target.classList;
-			if (isSelecting) {
-				selectTimeSlot(day, time);
-				classList.add('selected');
-			} else {
-				deselectTimeSlot(day, time);
-				classList.remove('selected');
-			}
-		}
-	}
 
 	async function setTimezone(tz: string) {
 		timezone = tz;
 
 		// Save selected timezone to server
 		if (!username || !isAuthenticated) return;
-		const id = event?.id ?? '';
-		const result = await updateAttendee(id, username, { timezone });
+		const result = await updateAttendee(eventId, username, { timezone });
 
 		if (result) {
 			info(`Timezone saved successfully for ${username}: ${timezone}`);
@@ -137,11 +40,6 @@
 			errorMsg = result.message;
 		}
 	}
-
-	onMount(() => {
-		// Handles pointer up event outside of the time selectors
-		window.addEventListener('pointerup', handlePointerUp);
-	});
 
 	/*
 	 * Authentication logic
@@ -169,7 +67,7 @@
 			return;
 		}
 
-		const result = await signinAttendee(event?.id ?? '', username, password);
+		const result = await signinAttendee(eventId, username, password);
 
 		// TODO: return specific error messages (invalid pass, internal server error, etc)
 		if (result) {
@@ -238,7 +136,7 @@
 	}
 
 	async function updateData() {
-		const result = await getAttendees(event?.id ?? '');
+		const result = await getAttendees(eventId);
 		if (result) {
 			availabilities = result.attendees ?? [];
 			timeSelector.loadHeatmapData();
@@ -251,7 +149,7 @@
 <div class="flex flex-col items-center justify-center gap-4">
 	<h1 class="text-center text-4xl font-bold">Event: {event?.name}</h1>
 	<div class="flex flex-col items-center gap-4 rounded border-2 border-primary-500 bg-gray-500 p-6">
-		{#if isAuthenticated === null || !isAuthenticated}
+		{#if !isAuthenticated}
 			<h1 class="text-center text-3xl font-bold">Sign in to select times</h1>
 			<form onsubmit={handleSubmit} class="flex flex-col items-center">
 				<div class="flex flex-col items-center gap-2 md:flex-row md:items-end">
@@ -279,7 +177,7 @@
 			{#if isAuthenticated === false}
 				<p class="text-red-500">{errorMsg}</p>
 			{/if}
-		{:else if isAuthenticated}
+		{:else}
 			<div class="flex flex-col items-center gap-4">
 				<h2 class="text-3xl font-bold">Welcome, {username}!</h2>
 				<button onclick={signout} class="rounded bg-primary-500 px-4 py-2 text-white"
@@ -316,9 +214,10 @@
 			availabilityData={availabilities}
 			{rangeStart}
 			{rangeEnd}
-			onpointerdown={handlePointerDown}
-			onpointerup={handlePointerUp}
-			onpointerenter={handlePointerEnter}
+			{isAuthenticated}
+			{username}
+			{eventId}
+			bind:selectedTimes
 			bind:this={timeSelector}
 		/>
 	</div>
