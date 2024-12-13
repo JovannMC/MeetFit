@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { fetchHelper } from '$lib/api';
 	import { days, type Day } from '$lib/common';
 	import Calendar from '$lib/components/Calendar.svelte';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
@@ -32,24 +33,16 @@
 
 	async function createEvent() {
 		info(`Creating event: ${eventName}`);
-		const response = await fetch('/api/events', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				name: eventName,
-				timezone,
-				timeRangeStart: timeValue[0],
-				timeRangeEnd: timeValue[1],
-				days: selectedDays
-			})
+		const result = await fetchHelper('/api/events', 'POST', {
+			name: eventName,
+			timezone,
+			timeRangeStart: timeValue[0],
+			timeRangeEnd: timeValue[1],
+			days: selectedDays
 		});
 
-		const result = await response.json();
-		if (response.ok) {
+		if (result) {
 			info('Event created successfully:', JSON.stringify(result));
-
 			goto(`/event/${result.event.id}`);
 		} else {
 			error(`Failed to create event: ${result.message}`);
@@ -62,8 +55,7 @@
 
 	async function checkAPIResponse() {
 		info(`Checking API response for: ${apiEndpoint}`);
-		const response = await fetch(`${apiEndpoint}`);
-		const result = await response.json();
+		const result = await fetchHelper(apiEndpoint, 'GET');
 		info('API response:', JSON.stringify(result));
 
 		apiResponse = result;

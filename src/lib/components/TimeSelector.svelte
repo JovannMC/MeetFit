@@ -7,11 +7,22 @@
 		availabilityData,
 		rangeStart,
 		rangeEnd,
-		selected,
 		onpointerdown,
 		onpointerup,
 		onpointerenter
 	} = $props();
+
+	const colorVariants = [
+		'bg-primary-100',
+		'bg-primary-200',
+		'bg-primary-300',
+		'bg-primary-400',
+		'bg-primary-500',
+		'bg-primary-600',
+		'bg-primary-700',
+		'bg-primary-800',
+		'bg-primary-900'
+	];
 
 	// Calculate amount of time slots
 	const timeSlots = (rangeEnd - rangeStart + 0.25) / 0.25;
@@ -41,43 +52,49 @@
 			}
 		)} '${String(dayObject.year).slice(2)}`;
 
-	let heatmapData: { [key: string]: { [key: string]: number | string } } = {};
+	let heatmapData: { [key: string]: { [key: string]: number | string } } = $state({});
 
-	if (availabilityData) {
-		availabilityData.forEach(
-			({ availability }: { availability: { day: string; times: string[] }[] }) => {
-				availability.forEach(({ day, times }: { day: string; times: string[] }) => {
-					if (!heatmapData[day]) {
-						heatmapData[day] = {};
-					}
-					times.forEach((time) => {
-						if (!heatmapData[day][time]) {
-							heatmapData[day][time] = 0;
+	export function loadHeatmapData() {
+		heatmapData = {};
+		if (availabilityData) {
+			availabilityData.forEach(
+				({ availability }: { availability: { day: string; times: string[] }[] }) => {
+					if (!availability) return;
+					availability.forEach(({ day, times }: { day: string; times: string[] }) => {
+						if (!heatmapData[day]) {
+							heatmapData[day] = {};
 						}
-						heatmapData[day][time] = (heatmapData[day][time] as number) + 1;
+						times.forEach((time) => {
+							if (!heatmapData[day][time]) {
+								heatmapData[day][time] = 0;
+							}
+							heatmapData[day][time] = (heatmapData[day][time] as number) + 1;
+						});
 					});
+				}
+			);
+
+			// Assign colors based on counts
+			const maxCount = Math.max(
+				...Object.values(heatmapData).flatMap((dayData) =>
+					Object.values(dayData).map((count) => count as number)
+				)
+			);
+
+			Object.keys(heatmapData).forEach((day) => {
+				Object.keys(heatmapData[day]).forEach((time) => {
+					const count = heatmapData[day][time] as number;
+					const intensity = Math.floor((count / maxCount) * 7);
+					heatmapData[day][time] = `bg-primary-${100 + intensity * 100}`;
 				});
-			}
-		);
-	
-		// Assign colors based on counts
-		const maxCount = Math.max(
-			...Object.values(heatmapData).flatMap((dayData) =>
-				Object.values(dayData).map((count) => count as number)
-			)
-		);
-	
-		Object.keys(heatmapData).forEach((day) => {
-			Object.keys(heatmapData[day]).forEach((time) => {
-				const count = heatmapData[day][time] as number;
-				const intensity = Math.floor((count / maxCount) * 7);
-				heatmapData[day][time] = `bg-secondary-${100 + intensity * 100}`;
 			});
-		});
-		info('Heatmap data:', JSON.stringify(heatmapData));
-	} else {
-		info('No availability data');
+			info('Heatmap data:', JSON.stringify(heatmapData));
+		} else {
+			info('No availability data');
+		}
 	}
+
+	loadHeatmapData();
 </script>
 
 <div class="flex flex-row">
@@ -118,21 +135,24 @@
 			</div>
 			<div class="flex flex-col items-center">
 				{#each Array(Math.ceil((timeSlotTimes.length - 1) / 4)) as _, groupIndex}
-				<div class="group flex flex-col">
-					{#each timeSlotTimes.slice(groupIndex * 4, (groupIndex + 1) * 4) as timeSlot, i}
-						<button
-							class="time-slot h-3 w-16 {heatmapData[dayObject.year + '-' + (dayObject.month + 1) + '-' + dayObject.day]?.[timeSlot] ?? 'bg-gray-400'}"
-							aria-label={timeSlot}
-							onclick={() => selected(dayObject, timeSlot)}
-							onpointerdown={(e) => onpointerdown(e, dayObject, timeSlot)}
-							{onpointerup}
-							onpointerenter={(e) => onpointerenter(e, dayObject, timeSlot)}
-						></button>
-						{#if (i + 1) % 2 === 0 && (i + 1) % 4 !== 0}
-							<div class="box-border border-t-2 border-dashed border-secondary-500"></div>
-						{/if}
-					{/each}
-				</div>
+					<div class="group flex flex-col">
+						{#each timeSlotTimes.slice(groupIndex * 4, (groupIndex + 1) * 4) as timeSlot, i}
+							{#key heatmapData}
+								<button
+									class="time-slot h-3 w-16 {heatmapData[
+										dayObject.year + '-' + (dayObject.month + 1) + '-' + dayObject.day
+									]?.[timeSlot] ?? 'bg-gray-500'}"
+									aria-label={timeSlot}
+									onpointerdown={(e) => onpointerdown(e, dayObject, timeSlot)}
+									{onpointerup}
+									onpointerenter={(e) => onpointerenter(e, dayObject, timeSlot)}
+								></button>
+							{/key}
+							{#if (i + 1) % 2 === 0 && (i + 1) % 4 !== 0}
+								<div class="box-border border-t-2 border-dashed border-primary-500"></div>
+							{/if}
+						{/each}
+					</div>
 				{/each}
 			</div>
 		</div>

@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { fetchHelper } from '$lib/api';
 	import type { Day } from '$lib/common';
 	import TimeSelector from '$lib/components/TimeSelector.svelte';
 	import { onMount } from 'svelte';
 	import { error, info } from '../../log';
 
 	let { data } = $props();
+	let timeSelector: any;
 
 	const event = data.props?.event;
 
@@ -16,7 +18,7 @@
 	let timezone = $state(currentTimezone);
 
 	const eventDays: Day[] = JSON.parse(event?.days ?? '[]');
-	const availabilities = JSON.parse(event?.attendees ?? '[]');
+	let availabilities = $state(JSON.parse(event?.attendees ?? '[]'));
 	const rangeStart = event?.timeRangeStart ?? 0;
 	const rangeEnd = event?.timeRangeEnd ?? 24;
 
@@ -66,6 +68,7 @@
 	let isDeselecting = false;
 
 	function handlePointerDown(event: any, day: Day, time: string) {
+		if (!isAuthenticated) return;
 		isDragging = true;
 		const classList = event.target.classList;
 		if (classList.contains('selected')) {
@@ -93,21 +96,12 @@
 				times
 			}));
 
-			const response = await fetch(`/api/events/${event?.id}/attendees/${username}`, {
-				method: 'PATCH',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					availability: selectedTimesArray
-				})
+			const result = await fetchHelper(`/api/events/${event?.id}/attendees/${username}`, 'PATCH', {
+				availability: selectedTimesArray
 			});
-
-			const result = await response.json();
-			if (response.ok) {
-				info(
-					`Selected times saved successfully for ${username}: ${JSON.stringify(selectedTimesArray)}`
-				);
+			
+			if (result) {
+				info(`Selected times saved successfully for ${username}: ${JSON.stringify(selectedTimesArray)}`);
 			} else {
 				error(`Failed to save selected times for ${username}: ${result.message}`);
 			}
@@ -116,6 +110,7 @@
 
 	// TODO: click and drag selection box/rectangle like Calendar.svelte
 	function handlePointerEnter(event: any, day: Day, time: string) {
+		if (!isAuthenticated) return;
 		if (isDragging) {
 			const classList = event.target.classList;
 			if (isSelecting) {
@@ -133,18 +128,11 @@
 
 		// Save selected timezone to server
 		if (!username || !isAuthenticated) return;
-		const response = await fetch(`/api/events/${event?.id}/attendees/${username}`, {
-			method: 'PATCH',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				timezone
-			})
+		const result = await fetchHelper(`/api/events/${event?.id}/attendees/${username}`, 'PATCH', {
+			timezone
 		});
-
-		const result = await response.json();
-		if (response.ok) {
+		
+		if (result) {
 			info(`Timezone saved successfully for ${username}: ${timezone}`);
 		} else {
 			error(`Failed to save timezone for ${username}: ${result.message}`);
@@ -183,20 +171,26 @@
 			return;
 		}
 
-		const response = await fetch(`/api/events/${event?.id}/attendees`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ username, password })
+		const result = await fetchHelper(`/api/events/${event?.id}/attendees`, 'POST', {
+			username,
+			password
 		});
-
+		
 		// TODO: return specific error messages (invalid pass, internal server error, etc)
-		const result = await response.json();
-		if (response.ok) {
+		if (result) {
 			info(`Authenticated successfully as ${result.attendee.name}`);
 			isAuthenticated = true;
-
+		
+			// Remove heatmap visualization
+			const timeSlots = document.querySelectorAll('.time-slot');
+			timeSlots.forEach((slot) => {
+				slot.classList.forEach((className) => {
+					if (className.startsWith('bg-')) {
+						slot.classList.remove(className);
+					}
+				});
+			});
+		
 			if (result.attendee.timezone) {
 				info(`Attendee timezone: ${result.attendee.timezone}`);
 				timezone = result.attendee.timezone;
@@ -204,10 +198,10 @@
 				info('No timezone found for attendee');
 				setTimezone(timezone);
 			}
-
+		
 			if (result.attendee.availability) {
 				selectedTimes = result.attendee.availability;
-
+		
 				for (const [_, value] of Object.entries(selectedTimes)) {
 					const json = value as unknown as { day: string; times: string[] };
 					info(`Day: ${json.day}, times: ${json.times}`);
@@ -232,7 +226,7 @@
 	}
 
 	// TODO: somehow link the elements and time slots together, so i don't have to remove from selectedTimes and search for the element (make a method / map)
-	function signout() {
+	async function signout() {
 		isAuthenticated = null;
 		username = '';
 
@@ -242,6 +236,18 @@
 		// set all time slots to unselected
 		const timeSlotElements = document.querySelectorAll('.selected');
 		timeSlotElements.forEach((element) => element.classList.remove('selected'));
+
+		await updateData()
+	}
+
+	async function updateData() {
+		const result = await fetchHelper(`/api/events/${event?.id}/attendees`, 'GET');
+		if (result) {
+			availabilities = result.attendees ?? [];
+			timeSelector.loadHeatmapData();
+		} else {
+			error(`Failed to update data: ${result.message}`);
+		}
 	}
 </script>
 
@@ -313,10 +319,10 @@
 			availabilityData={availabilities}
 			{rangeStart}
 			{rangeEnd}
-			selected={(day: Day, time: string) => selectTimeSlot(day, time)}
 			onpointerdown={handlePointerDown}
 			onpointerup={handlePointerUp}
 			onpointerenter={handlePointerEnter}
+			bind:this={timeSelector}
 		/>
 	</div>
 </div>
