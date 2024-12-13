@@ -7,20 +7,6 @@ export interface Day {
 	isToday: boolean;
 	isPast: boolean;
 }
-export interface Availability {
-	day: string;
-	times: string[];
-}
-
-export interface AttendeeDetails {
-	name: string;
-	availability: Availability[];
-	timezone: string;
-}
-
-export interface Meeting {
-	attendees: AttendeeDetails[];
-}
 
 export const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const months = [

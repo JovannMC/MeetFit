@@ -2,17 +2,13 @@
 	import type { Day } from '$lib/common';
 	import { info } from '../../routes/log';
 
-	let {
-		days,
-		availabilityData,
-		rangeStart,
-		rangeEnd,
-		onpointerdown,
-		onpointerup,
-		onpointerenter
-	} = $props();
+	let { days, availabilityData, rangeStart, rangeEnd, onpointerdown, onpointerup, onpointerenter } =
+		$props();
 
+	// intentionally unused. this is so tailwind can generate the css for these colours as it doesn't detect if it's dynamically loaded
+	// this would lead to the colours not being generated in the final css file by tailwind
 	const colorVariants = [
+		'bg-gray-500',
 		'bg-primary-100',
 		'bg-primary-200',
 		'bg-primary-300',
@@ -175,5 +171,9 @@
 
 	.group:last-child {
 		border-bottom: 2px solid theme('colors.secondary.500');
+	}
+
+	.time-slot {
+		transition: background-color 0.2s ease;
 	}
 </style>

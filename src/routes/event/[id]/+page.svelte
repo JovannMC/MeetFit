@@ -180,8 +180,10 @@
 			const timeSlots = document.querySelectorAll('.time-slot');
 			timeSlots.forEach((slot) => {
 				slot.classList.forEach((className) => {
-					if (className.startsWith('bg-')) {
+					const isGray = className === 'bg-gray-500';
+					if (className.startsWith('bg-') && !isGray) {
 						slot.classList.remove(className);
+						if (!isGray) slot.classList.add('bg-gray-500');
 					}
 				});
 			});
