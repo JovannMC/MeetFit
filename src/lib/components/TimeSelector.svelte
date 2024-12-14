@@ -273,7 +273,7 @@
 			{#each Array(Math.ceil(timeSlotTimes.length / 4)) as _, groupIndex}
 				<div class="group flex flex-col !border-transparent">
 					{#each timeSlotTimes.slice(groupIndex * 4, (groupIndex + 1) * 4) as timeSlot, i}
-						<div class="h-3 text-right text-sm">
+						<div class="h-3 text-right text-sm" style="margin-bottom: -2px;">
 							{#if i % 4 === 0}
 								{timeSlot}
 							{/if}
@@ -307,6 +307,7 @@
 										onpointerdown={(e) => handlePointerDown(e, dayObject, timeSlot)}
 										onpointerup={handlePointerUp}
 										onpointerenter={(e) => handlePointerEnter(e, dayObject, timeSlot)}
+										style="margin-bottom: -2px;"
 									></button>
 								{/key}
 								{#if (i + 1) % 2 === 0 && (i + 1) % 4 !== 0}
@@ -325,6 +326,10 @@
 	.group {
 		/* how tf do you fix the inconsistent borders */
 		border: 2px solid theme('colors.secondary.500');
+	}
+
+	.group:last-child {
+		border-bottom: 4px solid theme('colors.secondary.500');
 	}
 
 	.time-slot:hover {
