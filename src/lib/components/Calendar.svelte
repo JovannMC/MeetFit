@@ -205,11 +205,11 @@
 
 <div class="flex flex-col items-center justify-center gap-4 p-6">
 	<div class="flex flex-row items-center gap-3">
-		<button class="h-7 w-7 rounded bg-primary-500 text-white" onclick={() => changeMonth(-1)}
+		<button class="h-7 w-7 rounded-lg bg-primary-500 text-white" onclick={() => changeMonth(-1)}
 			>&lt;</button
 		>
 		<h1 class="w-48 text-center text-lg">{months[month]} {year}</h1>
-		<button class="h-7 w-7 rounded bg-primary-500 text-white" onclick={() => changeMonth(1)}
+		<button class="h-7 w-7 rounded-lg bg-primary-500 text-white" onclick={() => changeMonth(1)}
 			>&gt;</button
 		>
 	</div>

@@ -244,7 +244,9 @@
 </script>
 
 <div class="flex flex-col gap-4">
-	<div class="flex flex-col items-center gap-1 border-2 border-secondary-500 p-4 text-center">
+	<div
+		class="flex flex-col items-center gap-1 rounded-lg border-2 border-secondary-500 p-4 text-center"
+	>
 		<h1 class="text-sm">{hoveredTimeslot.startTime}-{hoveredTimeslot.endTime}</h1>
 		<h1 class="text-sm">
 			{hoveredTimeslot.availability.attending}/{hoveredTimeslot.availability.maxAttendees} available
@@ -252,7 +254,7 @@
 		<div class="flex flex-row gap-1">
 			{#each attendees as name}
 				<h1
-					class="border-2 border-primary-500 px-1 text-sm {hoveredTimeslot.availability.names.includes(
+					class="rounded-md border-2 border-primary-500 px-1 text-sm {hoveredTimeslot.availability.names.includes(
 						name
 					)
 						? 'bg-primary-500'

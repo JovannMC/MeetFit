@@ -148,7 +148,9 @@
 
 <div class="flex flex-col items-center justify-center gap-4">
 	<h1 class="text-center text-4xl font-bold">Event: {event?.name}</h1>
-	<div class="flex flex-col items-center gap-4 rounded border-2 border-primary-500 bg-gray-500 p-6">
+	<div
+		class="flex flex-col items-center gap-4 rounded-lg border-2 border-primary-500 bg-gray-500 p-6"
+	>
 		{#if !isAuthenticated}
 			<h1 class="text-center text-3xl font-bold">Sign in to select times</h1>
 			<form onsubmit={handleSubmit} class="flex flex-col items-center">
@@ -158,7 +160,7 @@
 						<input
 							name="name"
 							type="text"
-							class="w-full rounded border border-gray-300 p-2"
+							class="w-full rounded-lg border border-gray-300 p-2"
 							bind:value={username}
 						/>
 					</div>
@@ -167,10 +169,12 @@
 						<input
 							name="password"
 							type="password"
-							class="w-full rounded border border-gray-300 p-2"
+							class="w-full rounded-lg border border-gray-300 p-2"
 						/>
 					</div>
-					<button type="submit" class="rounded bg-primary-500 px-4 py-2 text-white">Sign in</button>
+					<button type="submit" class="rounded-lg bg-primary-500 px-4 py-2 text-white"
+						>Sign in</button
+					>
 				</div>
 			</form>
 
@@ -180,7 +184,7 @@
 		{:else}
 			<div class="flex flex-col items-center gap-4">
 				<h2 class="text-3xl font-bold">Welcome, {username}!</h2>
-				<button onclick={signout} class="rounded bg-primary-500 px-4 py-2 text-white"
+				<button onclick={signout} class="rounded-lg bg-primary-500 px-4 py-2 text-white"
 					>Sign out</button
 				>
 			</div>
@@ -196,7 +200,7 @@
 				name="timezone"
 				value={timezone}
 				onchange={(e) => setTimezone((e.target as HTMLSelectElement).value ?? '')}
-				class="w-full rounded border border-gray-300 p-2"
+				class="w-full rounded-lg border border-gray-300 p-2"
 			>
 				{#each filteredTimezones as tz}
 					<option value={tz}>{tz}</option>
@@ -206,7 +210,7 @@
 	</div>
 
 	<div
-		class="flex flex-col items-center gap-4 rounded border-2 border-primary-500 bg-gray-500 px-16 py-8"
+		class="flex flex-col items-center gap-4 rounded-lg border-2 border-primary-500 bg-gray-500 px-16 py-8"
 	>
 		<h2 class="text-3xl font-bold">Dates & times</h2>
 		<TimeSelector

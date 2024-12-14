@@ -71,7 +71,7 @@
 			<input
 				name="eventName"
 				type="text"
-				class="w-full rounded border border-gray-300 p-2"
+				class="w-full rounded-lg border border-gray-300 p-2"
 				bind:value={eventName}
 			/>
 		</div>
@@ -83,7 +83,7 @@
 				<select
 					name="startingDay"
 					bind:value={startingDay}
-					class="w-full rounded border border-gray-300 p-2"
+					class="w-full rounded-lg border border-gray-300 p-2"
 				>
 					{#each days as day}
 						<option value={day}>{day}</option>
@@ -95,7 +95,7 @@
 				<select
 					name="timezone"
 					bind:value={timezone}
-					class="w-full rounded border border-gray-300 p-2"
+					class="w-full rounded-lg border border-gray-300 p-2"
 				>
 					{#each filteredTimezones as tz}
 						<option value={tz}>{tz}</option>
@@ -124,13 +124,13 @@
 		</div>
 
 		<!-- Date range -->
-		<div class="col-span-1 rounded border-2 border-primary-500 bg-surface-800">
+		<div class="col-span-1 rounded-lg border-2 border-primary-500 bg-surface-800">
 			<Calendar {startingDay} bind:selected={selectedDays} />
 		</div>
 
 		<!-- Submit button -->
 		<div class="col-span-1 flex justify-center">
-			<button class="rounded bg-primary-800 p-2 text-white" onclick={createEvent}
+			<button class="rounded-lg bg-primary-800 p-2 text-white" onclick={createEvent}
 				>Create event</button
 			>
 		</div>
@@ -141,10 +141,10 @@
 			<input
 				name="apiEndpoint"
 				type="text"
-				class="w-full rounded border border-gray-300 p-2"
+				class="w-full rounded-lg border border-gray-300 p-2"
 				bind:value={apiEndpoint}
 			/>
-			<button class="rounded bg-primary-800 p-2 text-white" onclick={checkAPIResponse}
+			<button class="rounded-lg bg-primary-800 p-2 text-white" onclick={checkAPIResponse}
 				>Check API</button
 			>
 			{#if apiResponse}
