@@ -8,6 +8,18 @@ export interface Day {
 	isPast: boolean;
 }
 
+export interface Availability {
+	day: string;
+	times: string[];
+}
+
+export interface Attendee {
+	name: string;
+	timezone: string;
+	availability: string;
+	passwordHash?: string;
+}
+
 export const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const months = [
 	'January',
@@ -23,13 +35,6 @@ export const months = [
 	'November',
 	'December'
 ];
-
-export interface Attendee {
-	name: string;
-	timezone: string;
-	availability: string;
-	passwordHash: string;
-}
 
 // stole these, not sure if i'll use them lol
 export const ordinal = (n: number) => {

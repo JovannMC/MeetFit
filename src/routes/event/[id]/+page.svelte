@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getAttendees, signinAttendee, updateAttendee } from '$lib/api';
-	import type { Day } from '$lib/common';
+	import type { Availability, Day } from '$lib/common';
 	import TimeSelector from '$lib/components/TimeSelector.svelte';
 	import { error, info } from '../../log';
 
@@ -20,7 +20,7 @@
 	const rangeStart = event?.timeRangeStart ?? 0;
 	const rangeEnd = event?.timeRangeEnd ?? 24;
 
-	let availabilities = $state(JSON.parse(event?.attendees ?? '[]'));
+	let availabilities: Availability[] = $state(JSON.parse(event?.attendees ?? '[]'));
 	let selectedTimes: { day: string; times: string[] }[] = $state([]);
 	let timezone = $state(currentTimezone);
 
@@ -206,9 +206,9 @@
 	</div>
 
 	<div
-		class="flex flex-col items-center gap-2 rounded border-2 border-primary-500 bg-gray-500 p-8 pr-16"
+		class="flex flex-col items-center gap-4 rounded border-2 border-primary-500 bg-gray-500 px-16 py-8"
 	>
-		<h2 class="mb-4 ml-8 text-3xl font-bold">Days</h2>
+		<h2 class="text-3xl font-bold">Dates & times</h2>
 		<TimeSelector
 			days={eventDays}
 			availabilityData={availabilities}

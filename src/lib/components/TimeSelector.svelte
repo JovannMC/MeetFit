@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { updateAttendee } from '$lib/api';
-	import type { Day } from '$lib/common';
+	import type { Availability, Day } from '$lib/common';
 	import { onMount } from 'svelte';
 	import { error, info } from '../../routes/log';
 
@@ -30,10 +30,21 @@
 		'bg-primary-900'
 	];
 
+	let attendees = availabilityData?.map(({ name }: { name: string }) => name) ?? [''];
+	info(`Attendees: ${JSON.stringify(attendees)}`);
+	let hoveredTimeslot = $state({
+		startTime: '0:00',
+		endTime: '0:00',
+		availability: {
+			attending: 0,
+			maxAttendees: 0,
+			names: ['']
+		}
+	});
+
 	// Calculate amount of time slots
 	const timeSlots = (rangeEnd - rangeStart + 0.25) / 0.25;
-
-	// Calculate times for each time slot
+	info(`Time slot count: ${timeSlots}`);
 	const timeSlotTimes = Array(timeSlots)
 		.fill(0)
 		.map((_, i) => {
@@ -42,8 +53,6 @@
 			let minutes = (time - hours) * 60;
 			return `${hours}:${minutes === 0 ? '00' : minutes}`;
 		});
-
-	info(`Time slot count: ${timeSlots}`);
 
 	const shortDay = (dayObject: Day) =>
 		new Date(dayObject.year, dayObject.month, dayObject.day).toLocaleString('default', {
@@ -67,24 +76,21 @@
 	export function loadHeatmapData() {
 		heatmapData = {};
 		if (availabilityData) {
-			availabilityData.forEach(
-				({ availability }: { availability: { day: string; times: string[] }[] }) => {
-					if (!availability) return;
-					availability.forEach(({ day, times }: { day: string; times: string[] }) => {
-						if (!heatmapData[day]) {
-							heatmapData[day] = {};
+			availabilityData.forEach(({ availability }: { availability: Availability[] }) => {
+				if (!availability) return;
+				availability.forEach(({ day, times }: { day: string; times: string[] }) => {
+					if (!heatmapData[day]) {
+						heatmapData[day] = {};
+					}
+					times.forEach((time) => {
+						if (!heatmapData[day][time]) {
+							heatmapData[day][time] = 0;
 						}
-						times.forEach((time) => {
-							if (!heatmapData[day][time]) {
-								heatmapData[day][time] = 0;
-							}
-							heatmapData[day][time] = (heatmapData[day][time] as number) + 1;
-						});
+						heatmapData[day][time] = (heatmapData[day][time] as number) + 1;
 					});
-				}
-			);
+				});
+			});
 
-			// Assign colors based on counts
 			const maxCount = Math.max(
 				...Object.values(heatmapData).flatMap((dayData) =>
 					Object.values(dayData).map((count) => count as number)
@@ -107,7 +113,7 @@
 	loadHeatmapData();
 
 	/*
-	 * Time selection logic
+	 * Time slot selection logic
 	 */
 
 	function selectTimeSlot(day: Day, time: string) {
@@ -168,7 +174,6 @@
 		if (isSelecting || isDeselecting) {
 			isSelecting = false;
 			isDeselecting = false;
-			// Save selected times to server
 			if (!username || !isAuthenticated) return;
 			const availability = selectedTimes.map(
 				({ day, times }: { day: string; times: string[] }) => ({
@@ -189,89 +194,132 @@
 
 	// TODO: click and drag selection box/rectangle like Calendar.svelte
 	function handlePointerEnter(event: any, day: Day, time: string) {
-		if (!isAuthenticated) return;
-		if (isDragging) {
-			const classList = event.target.classList;
-			if (isSelecting) {
-				selectTimeSlot(day, time);
-				classList.add('selected');
-			} else {
-				deselectTimeSlot(day, time);
-				classList.remove('selected');
+		if (!isAuthenticated) {
+			const key = `${day.year}-${day.month + 1}-${day.day}`;
+			const [hours, minutes] = time.split(':').map(Number);
+			const endTimeHours = minutes + 15 >= 60 ? hours + 1 : hours;
+			const endTimeMinutes = (minutes + 15) % 60;
+			const endTime = `${endTimeHours}:${endTimeMinutes < 10 ? '0' : ''}${endTimeMinutes}`;
+
+			const attending =
+				availabilityData?.filter(({ availability }: { availability?: Availability[] }) =>
+					availability?.some((a) => a.day === key && a.times.includes(time))
+				).length ?? 0;
+
+			const maxAttendees = availabilityData?.length ?? 0;
+
+			const names =
+				availabilityData
+					?.filter(({ availability }: { availability?: Availability[] }) =>
+						availability?.some((a) => a.day === key && a.times.includes(time))
+					)
+					.map(({ name }: { name: string }) => name) ?? [];
+
+			hoveredTimeslot = {
+				startTime: time,
+				endTime,
+				availability: {
+					attending,
+					maxAttendees,
+					names
+				}
+			};
+		} else {
+			if (isDragging) {
+				const classList = event.target.classList;
+				if (isSelecting) {
+					selectTimeSlot(day, time);
+					classList.add('selected');
+				} else {
+					deselectTimeSlot(day, time);
+					classList.remove('selected');
+				}
 			}
 		}
 	}
 
 	onMount(() => {
-		// Handles pointer up event outside of the time selectors
 		window.addEventListener('pointerup', handlePointerUp);
 	});
 </script>
 
-<div class="flex flex-row">
-	<!-- 
-		THIS IS THE WORST FUCKING WORKAROUND TO GET THE TIMES ALIGNED BUT IT WORKS
-		I CANT BELIEVE THIS SHIT WORKS, THIS IS THE WORST WORKAROUND IVE EVER DONE.
+<div class="flex flex-col gap-4">
+	<div class="flex flex-col items-center gap-1 border-2 border-secondary-500 p-4 text-center">
+		<h1 class="text-sm">{hoveredTimeslot.startTime}-{hoveredTimeslot.endTime}</h1>
+		<h1 class="text-sm">
+			{hoveredTimeslot.availability.attending}/{hoveredTimeslot.availability.maxAttendees} available
+		</h1>
+		<div class="flex flex-row gap-1">
+			{#each attendees as name}
+				<h1
+					class="border-2 border-primary-500 px-1 text-sm {hoveredTimeslot.availability.names.includes(
+						name
+					)
+						? 'bg-primary-500'
+						: ''}"
+					title={name}
+				>
+					{name.length > 10 ? name.slice(0, 10) + '...' : name}
+				</h1>
+			{/each}
+		</div>
+	</div>
 
-		I'VE BEEN LOSING MY MIND OVER THIS FUCKING THING I WANNA CRY LMAO
-
-		this uses the same code as the one used for creating the timeSlots, adjusting the margins and making border transparent (marking it as important)
-		we can't just remove the border because that would adjust the height (WHICH ISN'T SUPPOSED TO HAPPEN BECAUSE OF FUCKING "border-box" BUT YOU KNOW, FUCK ME!!!)
-	-->
-	<div class="mr-2 flex flex-col">
-		<div class="h-9"></div>
-		{#each Array(Math.ceil(timeSlotTimes.length / 4)) as _, groupIndex}
-			<div class="group flex flex-col !border-transparent">
-				{#each timeSlotTimes.slice(groupIndex * 4, (groupIndex + 1) * 4) as timeSlot, i}
-					<div class="h-3 w-16 text-right text-sm">
-						{#if i % 4 === 0}
-							{timeSlot}
+	<div class="flex flex-row">
+		<div class="mr-2 flex flex-col">
+			<div class="h-9"></div>
+			{#each Array(Math.ceil(timeSlotTimes.length / 4)) as _, groupIndex}
+				<div class="group flex flex-col !border-transparent">
+					{#each timeSlotTimes.slice(groupIndex * 4, (groupIndex + 1) * 4) as timeSlot, i}
+						<div class="h-3 text-right text-sm">
+							{#if i % 4 === 0}
+								{timeSlot}
+							{/if}
+						</div>
+						{#if (i + 1) % 2 === 0 && (i + 1) % 4 !== 0}
+							<div class="box-border border-t-2 border-transparent"></div>
 						{/if}
-					</div>
-					{#if (i + 1) % 2 === 0 && (i + 1) % 4 !== 0}
-						<div class="box-border border-t-2 border-transparent"></div>
-					{/if}
-				{/each}
+					{/each}
+				</div>
+			{/each}
+		</div>
+		{#each days as dayObject}
+			<div
+				class="flex w-16 flex-col"
+				data-day="{dayObject.year}-{dayObject.month + 1}-{dayObject.day}"
+			>
+				<div class="flex flex-col items-center">
+					<h1 class="text-lg">{shortDay(dayObject)}</h1>
+					<h1 class="text-xs">{shortDate(dayObject)}</h1>
+				</div>
+				<div class="flex flex-col items-center">
+					{#each Array(Math.ceil((timeSlotTimes.length - 1) / 4)) as _, groupIndex}
+						<div class="group flex flex-col">
+							{#each timeSlotTimes.slice(groupIndex * 4, (groupIndex + 1) * 4) as timeSlot, i}
+								{#key heatmapData}
+									<button
+										class="time-slot h-3 w-16 {heatmapData[
+											dayObject.year + '-' + (dayObject.month + 1) + '-' + dayObject.day
+										]?.[timeSlot] ?? 'bg-gray-500'}"
+										aria-label={timeSlot}
+										onpointerdown={(e) => handlePointerDown(e, dayObject, timeSlot)}
+										onpointerup={handlePointerUp}
+										onpointerenter={(e) => handlePointerEnter(e, dayObject, timeSlot)}
+									></button>
+								{/key}
+								{#if (i + 1) % 2 === 0 && (i + 1) % 4 !== 0}
+									<div class="box-border border-t-2 border-dotted border-secondary-500"></div>
+								{/if}
+							{/each}
+						</div>
+					{/each}
+				</div>
 			</div>
 		{/each}
 	</div>
-	{#each days as dayObject}
-		<div
-			class="flex w-16 flex-col"
-			data-day="{dayObject.year}-{dayObject.month + 1}-{dayObject.day}"
-		>
-			<div class="flex flex-col items-center">
-				<h1 class="text-lg">{shortDay(dayObject)}</h1>
-				<h1 class="text-xs">{shortDate(dayObject)}</h1>
-			</div>
-			<div class="flex flex-col items-center">
-				{#each Array(Math.ceil((timeSlotTimes.length - 1) / 4)) as _, groupIndex}
-					<div class="group flex flex-col">
-						{#each timeSlotTimes.slice(groupIndex * 4, (groupIndex + 1) * 4) as timeSlot, i}
-							{#key heatmapData}
-								<button
-									class="time-slot h-3 w-16 {heatmapData[
-										dayObject.year + '-' + (dayObject.month + 1) + '-' + dayObject.day
-									]?.[timeSlot] ?? 'bg-gray-500'}"
-									aria-label={timeSlot}
-									onpointerdown={(e) => handlePointerDown(e, dayObject, timeSlot)}
-									onpointerup={handlePointerUp}
-									onpointerenter={(e) => handlePointerEnter(e, dayObject, timeSlot)}
-								></button>
-							{/key}
-							{#if (i + 1) % 2 === 0 && (i + 1) % 4 !== 0}
-								<div class="box-border border-t-2 border-dashed border-primary-500"></div>
-							{/if}
-						{/each}
-					</div>
-				{/each}
-			</div>
-		</div>
-	{/each}
 </div>
 
 <style>
-	/* very weird workaround so the borders are the same size of 2px, because again this code is great */
 	.group {
 		box-sizing: border-box;
 		border-top: 1px solid theme('colors.secondary.500');
