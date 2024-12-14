@@ -194,46 +194,45 @@
 
 	// TODO: click and drag selection box/rectangle like Calendar.svelte
 	function handlePointerEnter(event: any, day: Day, time: string) {
-		if (!isAuthenticated) {
-			const key = `${day.year}-${day.month + 1}-${day.day}`;
-			const [hours, minutes] = time.split(':').map(Number);
-			const endTimeHours = minutes + 15 >= 60 ? hours + 1 : hours;
-			const endTimeMinutes = (minutes + 15) % 60;
-			const endTime = `${endTimeHours}:${endTimeMinutes < 10 ? '0' : ''}${endTimeMinutes}`;
+		const key = `${day.year}-${day.month + 1}-${day.day}`;
+		const [hours, minutes] = time.split(':').map(Number);
+		const endTimeHours = minutes + 15 >= 60 ? hours + 1 : hours;
+		const endTimeMinutes = (minutes + 15) % 60;
+		const endTime = `${endTimeHours}:${endTimeMinutes < 10 ? '0' : ''}${endTimeMinutes}`;
 
-			const attending =
-				availabilityData?.filter(({ availability }: { availability?: Availability[] }) =>
+		const attending =
+			availabilityData?.filter(({ availability }: { availability?: Availability[] }) =>
+				availability?.some((a) => a.day === key && a.times.includes(time))
+			).length ?? 0;
+
+		const maxAttendees = availabilityData?.length ?? 0;
+
+		const names =
+			availabilityData
+				?.filter(({ availability }: { availability?: Availability[] }) =>
 					availability?.some((a) => a.day === key && a.times.includes(time))
-				).length ?? 0;
+				)
+				.map(({ name }: { name: string }) => name) ?? [];
 
-			const maxAttendees = availabilityData?.length ?? 0;
+		hoveredTimeslot = {
+			startTime: time,
+			endTime,
+			availability: {
+				attending,
+				maxAttendees,
+				names
+			}
+		};
 
-			const names =
-				availabilityData
-					?.filter(({ availability }: { availability?: Availability[] }) =>
-						availability?.some((a) => a.day === key && a.times.includes(time))
-					)
-					.map(({ name }: { name: string }) => name) ?? [];
-
-			hoveredTimeslot = {
-				startTime: time,
-				endTime,
-				availability: {
-					attending,
-					maxAttendees,
-					names
-				}
-			};
-		} else {
-			if (isDragging) {
-				const classList = event.target.classList;
-				if (isSelecting) {
-					selectTimeSlot(day, time);
-					classList.add('selected');
-				} else {
-					deselectTimeSlot(day, time);
-					classList.remove('selected');
-				}
+		if (!isAuthenticated) return;
+		if (isDragging) {
+			const classList = event.target.classList;
+			if (isSelecting) {
+				selectTimeSlot(day, time);
+				classList.add('selected');
+			} else {
+				deselectTimeSlot(day, time);
+				classList.remove('selected');
 			}
 		}
 	}

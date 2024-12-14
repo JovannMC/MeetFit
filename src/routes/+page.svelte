@@ -124,7 +124,7 @@
 		</div>
 
 		<!-- Date range -->
-		<div class="col-span-1 rounded-lg border-2 border-primary-500 bg-surface-800">
+		<div class="col-span-1 rounded-lg border-2 border-primary-500 bg-gray-500">
 			<Calendar {startingDay} bind:selected={selectedDays} />
 		</div>
 
