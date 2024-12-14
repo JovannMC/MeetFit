@@ -265,9 +265,9 @@
 		</div>
 	</div>
 
-	<div class="flex flex-row">
+	<div class="flex flex-row gap-1">
 		<div class="mr-2 flex flex-col">
-			<div class="h-9"></div>
+			<div class="h-8"></div>
 			{#each Array(Math.ceil(timeSlotTimes.length / 4)) as _, groupIndex}
 				<div class="group flex flex-col !border-transparent">
 					{#each timeSlotTimes.slice(groupIndex * 4, (groupIndex + 1) * 4) as timeSlot, i}
@@ -321,22 +321,15 @@
 
 <style>
 	.group {
-		box-sizing: border-box;
-		border-top: 1px solid theme('colors.secondary.500');
-		border-bottom: 1px solid theme('colors.secondary.500');
-		border-left: 2px solid theme('colors.secondary.500');
-		border-right: 2px solid theme('colors.secondary.500');
-	}
-
-	.group:first-child {
-		border-top: 2px solid theme('colors.secondary.500');
-	}
-
-	.group:last-child {
-		border-bottom: 2px solid theme('colors.secondary.500');
+		/* how tf do you fix the inconsistent borders */
+		border: 2px solid theme('colors.secondary.500');
 	}
 
 	.time-slot {
 		transition: background-color 0.2s ease;
+	}
+
+	.time-slot:hover {
+		filter: brightness(1.2);
 	}
 </style>
