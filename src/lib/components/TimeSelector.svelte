@@ -254,7 +254,7 @@
 		<div class="flex flex-row gap-1">
 			{#each attendees as name}
 				<h1
-					class="rounded-md border-2 border-primary-500 px-1 text-sm {hoveredTimeslot.availability.names.includes(
+					class="fade-in rounded-md border-2 border-primary-500 px-1 text-sm {hoveredTimeslot.availability.names.includes(
 						name
 					)
 						? 'bg-primary-500'
@@ -300,7 +300,7 @@
 							{#each timeSlotTimes.slice(groupIndex * 4, (groupIndex + 1) * 4) as timeSlot, i}
 								{#key heatmapData}
 									<button
-										class="time-slot h-3 w-16 {heatmapData[
+										class="time-slot fade-in h-3 w-16 {heatmapData[
 											dayObject.year + '-' + (dayObject.month + 1) + '-' + dayObject.day
 										]?.[timeSlot] ?? 'bg-gray-500'}"
 										aria-label={timeSlot}
@@ -325,10 +325,6 @@
 	.group {
 		/* how tf do you fix the inconsistent borders */
 		border: 2px solid theme('colors.secondary.500');
-	}
-
-	.time-slot {
-		transition: background-color 0.2s ease;
 	}
 
 	.time-slot:hover {

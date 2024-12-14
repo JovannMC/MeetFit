@@ -10,3 +10,7 @@ select {
 .selected {
 	@apply bg-tertiary-300;
 }
+
+.fade-in {
+	transition: background-color 0.2s ease;
+}
