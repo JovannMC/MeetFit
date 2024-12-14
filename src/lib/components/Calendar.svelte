@@ -246,6 +246,7 @@
 					{day.day}
 				</button>
 			{/each}
+			<!-- FIXME for some reason, some months don't fill in the rest of the calendar (e.g. november 2024 on monday starting day) -->
 			{#each calendar.nextMonth as day}
 				<button
 					class="day h-12 w-12 content-center bg-secondary-800 text-xl

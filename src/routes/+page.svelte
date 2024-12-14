@@ -64,7 +64,7 @@
 
 <div class="flex flex-col items-center justify-center gap-2">
 	<h1 class="text-center text-4xl font-bold">Create an event</h1>
-	<div class="flex max-w-md flex-col gap-4">
+	<div class="flex max-w-md flex-col gap-6">
 		<!-- Event name -->
 		<div class="col-span-1 flex flex-col items-center gap-2 text-center">
 			<label class="text-xl" for="eventName">Event name:</label>

@@ -146,8 +146,8 @@
 	}
 </script>
 
-<div class="flex flex-col items-center justify-center gap-4">
-	<h1 class="text-center text-4xl font-bold">Event: {event?.name}</h1>
+<div class="flex flex-col items-start justify-center gap-4 sm:items-center">
+	<h1 class="w-full text-center text-4xl font-bold">Event: {event?.name}</h1>
 	<div
 		class="flex flex-col items-center gap-4 rounded-lg border-2 border-primary-500 bg-gray-500 p-6"
 	>
@@ -210,7 +210,7 @@
 	</div>
 
 	<div
-		class="flex flex-col items-center gap-4 rounded-lg border-2 border-primary-500 bg-gray-500 px-16 py-8"
+		class="flex flex-col items-start gap-4 rounded-lg border-2 border-primary-500 bg-gray-500 px-16 py-8 sm:items-center"
 	>
 		<h2 class="text-3xl font-bold">Dates & times</h2>
 		<TimeSelector

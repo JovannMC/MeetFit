@@ -14,6 +14,7 @@ This project is licensed under the [MIT](https://opensource.org/license/MIT/) Li
 ## Acknowledgments
 
 - [SvelteKit](https://kit.svelte.dev/)
+- [Skeleton](https://skeleton.dev/)
 - [crab.fit](https://crab.fit/)
 - [MeetingBrew](https://www.meetingbrew.com/)
 - [When2meet](https://www.when2meet.com/)
