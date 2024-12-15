@@ -216,7 +216,9 @@
 	<div class="flex flex-col gap-1 text-center">
 		<div class="flex flex-row gap-1">
 			{#each daysInWeek as day, i}
-				<div class="w-10 sm:w-12 {i >= 5 ? 'bg-primary-800' : 'bg-primary-500'}">{day.slice(0, 3)}</div>
+				<div class="w-10 sm:w-12 {i >= 5 ? 'bg-primary-800' : 'bg-primary-500'}">
+					{day.slice(0, 3)}
+				</div>
 			{/each}
 		</div>
 		<div class="grid grid-cols-7 gap-1">
