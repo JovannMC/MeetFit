@@ -216,13 +216,13 @@
 	<div class="flex flex-col gap-1 text-center">
 		<div class="flex flex-row gap-1">
 			{#each daysInWeek as day, i}
-				<div class="w-12 {i >= 5 ? 'bg-primary-800' : 'bg-primary-500'}">{day.slice(0, 3)}</div>
+				<div class="w-10 sm:w-12 {i >= 5 ? 'bg-primary-800' : 'bg-primary-500'}">{day.slice(0, 3)}</div>
 			{/each}
 		</div>
 		<div class="grid grid-cols-7 gap-1">
 			{#each calendar.previousMonth as day}
 				<button
-					class="day h-12 w-12 content-center bg-secondary-800 text-xl
+					class="day h-10 w-10 content-center bg-secondary-800 text-xl sm:h-12 sm:w-12
 					{day.isPast ? 'text-gray-400' : ''}"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}
@@ -234,7 +234,7 @@
 			{/each}
 			{#each calendar.currentMonth as day}
 				<button
-					class="day h-12 w-12 content-center text-xl
+					class="day h-10 w-10 content-center text-xl sm:h-12 sm:w-12
 						{day.isWeekend ? 'bg-secondary-700' : 'bg-secondary-600'}
 						{day.isToday ? 'text-green-400' : ''}
 						{day.isPast ? 'text-gray-400' : ''}"
@@ -249,7 +249,7 @@
 			<!-- FIXME for some reason, some months don't fill in the rest of the calendar (e.g. november 2024 on monday starting day) -->
 			{#each calendar.nextMonth as day}
 				<button
-					class="day h-12 w-12 content-center bg-secondary-800 text-xl
+					class="day h-10 w-10 content-center bg-secondary-800 text-xl sm:h-12 sm:w-12
 					{day.isPast ? 'text-gray-400' : ''}"
 					onpointerdown={handlePointerDown}
 					onpointerenter={handlePointerEnter}

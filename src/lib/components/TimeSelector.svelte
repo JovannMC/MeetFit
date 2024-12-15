@@ -242,7 +242,7 @@
 	});
 </script>
 
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-4 max-sm:container">
 	<div
 		class="flex flex-col items-center gap-1 rounded-lg border-2 border-secondary-500 p-4 text-center"
 	>
@@ -250,7 +250,7 @@
 		<h1 class="text-sm">
 			{hoveredTimeslot.availability.attending}/{hoveredTimeslot.availability.maxAttendees} available
 		</h1>
-		<div class="flex flex-row gap-1">
+		<div class="flex flex-row flex-wrap gap-1">
 			{#each attendees as name}
 				<h1
 					class="fade-in rounded-md border-2 border-primary-500 px-1 text-sm {hoveredTimeslot.availability.names.includes(
@@ -266,8 +266,8 @@
 		</div>
 	</div>
 
-	<div class="flex flex-row gap-1">
-		<div class="mr-2 flex flex-col">
+	<div class="flex flex-row gap-1 max-sm:overflow-x-auto max-sm:overflow-y-hidden">
+		<div class="z-10 mr-2 flex flex-col bg-gray-500 max-sm:sticky max-sm:left-0 max-sm:pr-2">
 			<div class="h-8"></div>
 			{#each Array(Math.ceil(timeSlotTimes.length / 4)) as _, groupIndex}
 				<div class="group flex flex-col !border-transparent">

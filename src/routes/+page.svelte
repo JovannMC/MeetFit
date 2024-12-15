@@ -64,7 +64,7 @@
 
 <div class="flex flex-col items-center justify-center gap-2">
 	<h1 class="text-center text-4xl font-bold">Create an event</h1>
-	<div class="flex max-w-md flex-col gap-6">
+	<div class="flex w-full max-w-md flex-col gap-6">
 		<!-- Event name -->
 		<div class="col-span-1 flex flex-col items-center gap-2 text-center">
 			<label class="text-xl" for="eventName">Event name:</label>
@@ -77,7 +77,7 @@
 		</div>
 
 		<!-- Starting day and Time zone -->
-		<div class="col-span-1 grid w-full grid-cols-2 gap-4">
+		<div class="col-span-1 grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
 			<div class="flex flex-col items-center gap-2">
 				<label class="text-xl" for="startingDay">Starting day:</label>
 				<select
@@ -105,8 +105,8 @@
 		</div>
 
 		<!-- Time range -->
-		<div class="col-span-1 flex w-full flex-col items-center">
-			<p class="text-xl">Time range:</p>
+		<div class="col-span-1 flex w-full flex-col items-center gap-1">
+			<p class="text-2xl">Time range:</p>
 			<p class="text-lg">{timeValue[0]}:00 - {timeValue[1]}:00</p>
 			<Slider
 				name="Event duration:"
@@ -114,13 +114,10 @@
 				min={0}
 				max={24}
 				bind:value={timeValue}
-				classes={'p-4'}
+				classes={'mt-6 mb-8'}
+				markers={[0, 3, 6, 9, 12, 15, 18, 21, 24]}
+				markClasses={'text-sm !opacity-100'}
 			/>
-			<div class="flex w-full justify-between" style="width: 416px;">
-				{#each [12, 3, 6, 9, 12, 3, 6, 9, 12] as marker}
-					<span>{marker}</span>
-				{/each}
-			</div>
 		</div>
 
 		<!-- Date range -->
