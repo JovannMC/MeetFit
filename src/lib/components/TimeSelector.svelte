@@ -104,9 +104,8 @@
 					heatmapData[day][time] = `bg-primary-${100 + intensity * 100}`;
 				});
 			});
-			info('Heatmap data:', JSON.stringify(heatmapData));
 		} else {
-			info('No availability data');
+			info('No availability data for heatmap');
 		}
 	}
 

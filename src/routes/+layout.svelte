@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
+	import SettingsIcon from '$lib/components/Icons/SettingsIcon.svelte';
 	import { i18n } from '$lib/i18n';
 	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
 	import '../app.css';
@@ -32,7 +33,13 @@
 <Header />
 
 <ParaglideJS {i18n}>
-    <div class="p-6">
-        {@render children()}
-    </div>
+	<div class="p-6">
+		{@render children()}
+	</div>
 </ParaglideJS>
+
+<button
+	class="fixed bottom-4 right-4 flex items-center gap-2 rounded-full bg-primary-500 p-3 text-white shadow-lg transition duration-300 hover:bg-primary-700"
+>
+	<SettingsIcon size={'32px'} />
+</button>
