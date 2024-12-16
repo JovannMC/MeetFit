@@ -1,6 +1,10 @@
 <script lang="ts">
+	import { days } from '$lib/common';
+	import { language, startDay, theme } from '$lib/stores';
+	import { Switch } from '@skeletonlabs/skeleton-svelte';
 	import SettingsIcon from './icons/SettingsIcon.svelte';
-	let showSettings = false;
+
+	let showSettings = $state(false);
 
 	function toggleSettings() {
 		showSettings = !showSettings;
@@ -8,57 +12,67 @@
 </script>
 
 <div>
-	<button class="floating-button" on:click={toggleSettings}>
-		<SettingsIcon classes="{showSettings ? 'rotate' : ''}"/>
+	<button
+		class="fixed bottom-5 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-primary-900 text-white shadow-md"
+		onclick={toggleSettings}
+	>
+		<SettingsIcon classes={showSettings ? 'rotate' : ''} />
 	</button>
 
 	{#if showSettings}
-		<div class="settings-window">
+		<div
+			class="fixed bottom-20 right-5 flex w-72 flex-col gap-2 rounded-lg border-2 border-primary-500 bg-gray-500 p-5 shadow-md"
+		>
 			<h3 class="text-center text-2xl">Settings</h3>
-			<!-- Placeholder settings -->
-			<div>
-				<label>
-					<input type="checkbox" /> Enable meowing
-				</label>
-			</div>
-			<div>
-				<label>
-					<input type="checkbox" /> Enable barking
-				</label>
+			<div class="flex flex-col gap-4">
+				<div class="flex flex-col items-center gap-2">
+					<label class="text-lg" for="startingDay">Theme:</label>
+					<select
+						name="startingDay"
+						bind:value={$theme}
+						class="w-full rounded-lg border border-gray-300 p-2"
+					>
+						<option value="light">Light</option>
+						<option value="dark">Dark</option>
+					</select>
+				</div>
+				<div class="flex flex-col gap-3">
+					<div class="flex items-center">
+						<Switch name="format" />
+						<label for="format">12/24 Hour Time</label>
+					</div>
+					<div class="flex items-center">
+						<Switch name="meow" />
+						<label for="meow">Enable meowing</label>
+					</div>
+					<div class="flex items-center">
+						<Switch name="bark" />
+						<label for="bark">Enable barking</label>
+					</div>
+				</div>
+				<div class="flex flex-col items-center gap-2">
+					<label class="text-lg" for="startingDay">Starting day:</label>
+					<select
+						name="startingDay"
+						bind:value={$startDay}
+						class="w-full rounded-lg border border-gray-300 p-2"
+					>
+						{#each days as day}
+							<option value={day}>{day}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="flex flex-col items-center gap-2">
+					<label class="text-lg" for="startingDay">Language:</label>
+					<select
+						name="language"
+						bind:value={$language}
+						class="w-full rounded-lg border border-gray-300 p-2"
+					>
+						<option value="en">English</option>
+					</select>
+				</div>
 			</div>
 		</div>
 	{/if}
 </div>
-
-<style>
-    .floating-button {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        @apply bg-primary-900;
-    }
-
-    .settings-window {
-        position: fixed;
-        bottom: 80px;
-        right: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        width: 300px;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        @apply border-2 border-primary-500 bg-gray-500;
-    }
-</style>

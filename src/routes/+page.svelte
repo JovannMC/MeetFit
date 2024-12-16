@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { addEvent, fetchHelper } from '$lib/api';
-	import { days, type Day } from '$lib/common';
+	import { type Day } from '$lib/common';
 	import Calendar from '$lib/components/Calendar.svelte';
+	import { startDay } from '$lib/stores';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
+	import { get } from 'svelte/store';
 	import { error, info } from './log';
 
 	const timezones = Intl.supportedValuesOf('timeZone');
@@ -12,8 +14,10 @@
 	);
 	const currentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+	let startingDay = $state(get(startDay));
+
 	let eventName = $state('');
-	let startingDay = $state('Monday');
+	let eventType = $state('dates')
 	let timezone = $state(currentTimezone);
 	let selectedDays: Day[] = $state([]);
 
@@ -60,6 +64,13 @@
 
 		apiResponse = result;
 	}
+
+	// Subscribing to settings changes (store)
+	$effect(() => {
+        startDay.subscribe(value => {
+            startingDay = value;
+        });
+    });
 </script>
 
 <div class="flex flex-col items-center justify-center gap-2">
@@ -76,18 +87,16 @@
 			/>
 		</div>
 
-		<!-- Starting day and Time zone -->
 		<div class="col-span-1 grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
 			<div class="flex flex-col items-center gap-2">
-				<label class="text-xl" for="startingDay">Starting day:</label>
+				<label class="text-xl" for="startingDay">Event type:</label>
 				<select
-					name="startingDay"
-					bind:value={startingDay}
+					name="type"
+					bind:value={eventType}
 					class="w-full rounded-lg border border-gray-300 p-2"
 				>
-					{#each days as day}
-						<option value={day}>{day}</option>
-					{/each}
+					<option value="dates">Specific dates</option>
+					<option value="times">Days of the week</option>
 				</select>
 			</div>
 			<div class="flex flex-col items-center gap-2">
