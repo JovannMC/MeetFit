@@ -1,5 +1,13 @@
 <script lang="ts">
-	let { id, label, options, selected, onChange } = $props();
+	interface Props {
+		id: string;
+		label: string;
+		options: string[];
+		selected: string;
+		onChange: (value: string) => void;
+	}
+
+	let { id, label, options, selected, onChange }: Props = $props();
 </script>
 
 <div {id}>

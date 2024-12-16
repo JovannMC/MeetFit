@@ -1,5 +1,11 @@
 <script lang="ts">
-	let { size = '24', color = 'currentColor', classes = '' } = $props();
+	interface Props {
+		size?: string;
+		color?: string;
+		classes?: string;
+	}
+
+	let { size = '24', color = 'currentColor', classes = '' }: Props = $props();
 </script>
 
 <svg

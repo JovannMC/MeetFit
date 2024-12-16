@@ -4,6 +4,18 @@
 	import { onMount } from 'svelte';
 	import { error, info } from '../../routes/log';
 
+	interface Props {
+		days: Day[];
+		// idk why Availability[] doesn't work here but it's fine in the event page
+		availabilityData: any;
+		rangeStart: number;
+		rangeEnd: number;
+		selectedTimes: { day: string; times: string[] }[];
+		isAuthenticated: boolean | null;
+		username: string;
+		eventId: string;
+	}
+
 	let {
 		days,
 		availabilityData,
@@ -13,7 +25,7 @@
 		isAuthenticated = $bindable(),
 		username = $bindable(),
 		eventId = $bindable()
-	} = $props();
+	}: Props = $props();
 
 	// intentionally unused. this is so tailwind can generate the css for these colours as it doesn't detect if it's dynamically loaded
 	// this would lead to the colours not being generated in the final css file by tailwind
