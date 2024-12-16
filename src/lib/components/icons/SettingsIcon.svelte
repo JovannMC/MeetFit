@@ -1,9 +1,9 @@
-<script>
-	export let size = '24';
-	export let color = 'currentColor';
+<script lang="ts">
+	let { size = '24', color = 'currentColor', classes = '' } = $props();
 </script>
 
 <svg
+	class={`icon ${classes}`}
 	width={size}
 	height={size}
 	viewBox="0 0 24 24"

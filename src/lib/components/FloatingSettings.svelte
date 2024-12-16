@@ -8,8 +8,8 @@
 </script>
 
 <div>
-	<button class="floating-button {showSettings ? 'rotate' : ''}" on:click={toggleSettings}>
-		<SettingsIcon />
+	<button class="floating-button" on:click={toggleSettings}>
+		<SettingsIcon classes="{showSettings ? 'rotate' : ''}"/>
 	</button>
 
 	{#if showSettings}
@@ -45,12 +45,7 @@
         justify-content: center;
         cursor: pointer;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease;
         @apply bg-primary-900;
-    }
-
-    .floating-button.rotate {
-        transform: rotate(90deg);
     }
 
     .settings-window {
