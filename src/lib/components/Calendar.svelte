@@ -10,6 +10,8 @@
 
 	let { startingDay = 'Monday', selected = $bindable() }: Props = $props();
 
+	let isLoading = $state(true);
+
 	const date = new Date();
 	let month = $state(date.getMonth());
 	let year = $state(date.getFullYear());
@@ -31,6 +33,7 @@
 	const weekend = $derived(daysInWeek.slice(-2));
 
 	$effect(() => {
+		isLoading = true;
 		const daysCurrent = daysInMonth(month, year);
 		info(`Current month, ${months[month]} ${year}, has ${daysCurrent} days.`);
 		const daysPrevious = daysInMonth(month - 1, year);
@@ -66,6 +69,8 @@
 			nextMonth:
 				lastDayOfWeek !== 6 ? calculateAdjacentMonthDays(7 - lastDayOfWeek, 0, 1, year) : []
 		};
+
+		isLoading = false;
 	});
 
 	const changeMonth = (direction: number) => {
@@ -226,46 +231,53 @@
 				</div>
 			{/each}
 		</div>
-		<div class="grid grid-cols-7 gap-1">
-			{#each calendar.previousMonth as day}
-				<button
-					class="day h-10 w-10 content-center bg-secondary-800 text-xl sm:h-12 sm:w-12
-					{day.isPast ? 'text-gray-400' : ''}"
-					onpointerdown={handlePointerDown}
-					onpointerenter={handlePointerEnter}
-					onpointerup={handlePointerUp}
-					data-day={JSON.stringify(day)}
-				>
-					{day.day}
-				</button>
-			{/each}
-			{#each calendar.currentMonth as day}
-				<button
-					class="day h-10 w-10 content-center text-xl sm:h-12 sm:w-12
-						{day.isWeekend ? 'bg-secondary-700' : 'bg-secondary-600'}
-						{day.isToday ? 'text-green-400' : ''}
-						{day.isPast ? 'text-gray-400' : ''}"
-					onpointerdown={handlePointerDown}
-					onpointerenter={handlePointerEnter}
-					onpointerup={handlePointerUp}
-					data-day={JSON.stringify(day)}
-				>
-					{day.day}
-				</button>
-			{/each}
-			<!-- FIXME for some reason, some months don't fill in the rest of the calendar (e.g. november 2024 on monday starting day) -->
-			{#each calendar.nextMonth as day}
-				<button
-					class="day h-10 w-10 content-center bg-secondary-800 text-xl sm:h-12 sm:w-12
-					{day.isPast ? 'text-gray-400' : ''}"
-					onpointerdown={handlePointerDown}
-					onpointerenter={handlePointerEnter}
-					onpointerup={handlePointerUp}
-					data-day={JSON.stringify(day)}
-				>
-					{day.day}
-				</button>
-			{/each}
-		</div>
+		{#if isLoading}
+			<div class="grid grid-cols-7 gap-1">
+				{#each Array(42) as _}
+					<div class="placeholder h-10 w-10 animate-pulse sm:h-12 sm:w-12"></div>
+				{/each}
+			</div>
+		{:else}
+			<div class="grid grid-cols-7 gap-1">
+				{#each calendar.previousMonth as day}
+					<button
+						class="day h-10 w-10 content-center bg-secondary-800 text-xl sm:h-12 sm:w-12
+                        {day.isPast ? 'text-gray-400' : ''}"
+						onpointerdown={handlePointerDown}
+						onpointerenter={handlePointerEnter}
+						onpointerup={handlePointerUp}
+						data-day={JSON.stringify(day)}
+					>
+						{day.day}
+					</button>
+				{/each}
+				{#each calendar.currentMonth as day}
+					<button
+						class="day h-10 w-10 content-center text-xl sm:h-12 sm:w-12
+                            {day.isWeekend ? 'bg-secondary-700' : 'bg-secondary-600'}
+                            {day.isToday ? 'text-green-400' : ''}
+                            {day.isPast ? 'text-gray-400' : ''}"
+						onpointerdown={handlePointerDown}
+						onpointerenter={handlePointerEnter}
+						onpointerup={handlePointerUp}
+						data-day={JSON.stringify(day)}
+					>
+						{day.day}
+					</button>
+				{/each}
+				{#each calendar.nextMonth as day}
+					<button
+						class="day h-10 w-10 content-center bg-secondary-800 text-xl sm:h-12 sm:w-12
+                        {day.isPast ? 'text-gray-400' : ''}"
+						onpointerdown={handlePointerDown}
+						onpointerenter={handlePointerEnter}
+						onpointerup={handlePointerUp}
+						data-day={JSON.stringify(day)}
+					>
+						{day.day}
+					</button>
+				{/each}
+			</div>
+		{/if}
 	</div>
 </div>

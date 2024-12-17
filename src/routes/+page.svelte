@@ -3,7 +3,7 @@
 	import { addEvent, fetchHelper } from '$lib/api';
 	import { type Day } from '$lib/common';
 	import Calendar from '$lib/components/Calendar.svelte';
-	import { startDay } from '$lib/stores';
+	import { languageStore, startingDayStore, themeStore, timeFormatStore } from '$lib/stores';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
 	import { get } from 'svelte/store';
 	import { error, info } from './log';
@@ -14,10 +14,13 @@
 	);
 	const currentTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-	let startingDay = $state(get(startDay));
+	let startingDay = $state(get(startingDayStore));
+	let lang = $state(get(languageStore));
+	let theme = $state(get(themeStore));
+	let timeFormat = $state(get(timeFormatStore));
 
 	let eventName = $state('');
-	let eventType = $state('dates')
+	let eventType = $state('dates');
 	let timezone = $state(currentTimezone);
 	let selectedDays: Day[] = $state([]);
 
@@ -67,10 +70,27 @@
 
 	// Subscribing to settings changes (store)
 	$effect(() => {
-        startDay.subscribe(value => {
-            startingDay = value;
-        });
-    });
+		startingDayStore.subscribe((value) => {
+			startingDay = value;
+		});
+
+		languageStore.subscribe((value) => {
+			lang = value;
+		});
+
+		themeStore.subscribe((value) => {
+			theme = value;
+		});
+
+		timeFormatStore.subscribe((value) => {
+			timeFormat = value;
+		});
+
+		info(`Language: ${$languageStore}`);
+		info(`Theme: ${$themeStore}`);
+		info(`Starting day: ${$startingDayStore}`);
+		info(`Time format: ${$timeFormatStore}`);
+	});
 </script>
 
 <div class="flex flex-col items-center justify-center gap-2">
@@ -86,7 +106,7 @@
 				bind:value={eventName}
 			/>
 		</div>
-
+		<!-- Event type & time zone -->
 		<div class="col-span-1 grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
 			<div class="flex flex-col items-center gap-2">
 				<label class="text-xl" for="startingDay">Event type:</label>
@@ -116,7 +136,17 @@
 		<!-- Time range -->
 		<div class="col-span-1 flex w-full flex-col items-center gap-1">
 			<p class="text-2xl">Time range:</p>
-			<p class="text-lg">{timeValue[0]}:00 - {timeValue[1]}:00</p>
+			{#if timeFormat === 12}
+				<p class="text-lg">
+					{timeValue[0] > 12 ? timeValue[0] - 12 : timeValue[0]}:00 {timeValue[0] >= 12
+						? 'PM'
+						: 'AM'} - {timeValue[1] > 12 ? timeValue[1] - 12 : timeValue[1]}:00 {timeValue[1] >= 12
+						? 'PM'
+						: 'AM'}
+				</p>
+			{:else}
+				<p class="text-lg">{timeValue[0]}:00 - {timeValue[1]}:00</p>
+			{/if}
 			<Slider
 				name="Event duration:"
 				step={1}

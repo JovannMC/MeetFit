@@ -253,7 +253,6 @@
 	});
 </script>
 
-<!-- TODO: use skeleton's pagination? -->
 <div class="flex flex-col gap-4 max-sm:container">
 	<div
 		class="flex flex-col items-center gap-1 rounded-lg border-2 border-secondary-500 p-4 text-center"
