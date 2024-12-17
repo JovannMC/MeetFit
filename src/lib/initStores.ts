@@ -1,13 +1,6 @@
-import { writable } from 'svelte/store';
+import { languageStore, startingDayStore, themeStore, timeFormatStore } from './stores';
 
-const isBrowser = typeof window !== 'undefined';
-
-export const startingDayStore = writable('Monday');
-export const timeFormatStore = writable(24);
-export const themeStore = writable('dark');
-export const languageStore = writable('en');
-
-if (isBrowser) {
+if (typeof window !== 'undefined') {
     startingDayStore.set(localStorage.getItem('startingDay') || 'Monday');
     timeFormatStore.set(parseInt(localStorage.getItem('timeFormat') || '24'));
     themeStore.set(localStorage.getItem('theme') || 'dark');

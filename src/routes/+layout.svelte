@@ -1,9 +1,10 @@
 <script lang="ts">
+	import FloatingSettings from '$lib/components/FloatingSettings.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { i18n } from '$lib/i18n';
+	import '$lib/initStores';
 	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
 	import '../app.css';
-	import FloatingSettings from '$lib/components/FloatingSettings.svelte';
 	let { children } = $props();
 </script>
 
