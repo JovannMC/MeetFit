@@ -43,11 +43,26 @@ export const ordinal = (n: number) => {
 	return n + (s[(v - 20) % 10] || s[v] || s[0]);
 };
 
-export const formatTime = (date: Date) => {
-	const hours = date.getHours();
-	const minutes = date.getMinutes();
-	const amPm = hours >= 12 ? 'pm' : 'am';
-	return `${hours % 12 || 12}:${minutes.toString().padStart(2, '0')} ${amPm}`;
+export const formatTime = (input: Date | string, showMinutes: boolean = true) => {
+    const format = (hours: number, minutes: number) => {
+        const amPm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12;
+        const formattedMinutes = minutes.toString().padStart(2, '0');
+        return showMinutes ? `${formattedHours}:${formattedMinutes} ${amPm}` : `${formattedHours} ${amPm}`;
+    };
+
+    if (typeof input === 'string') {
+		// Default minutes to 0 if not provided (e.g. "15" -> "3 PM")
+        const [hours, minutes = 0] = input.split(':').map(Number);
+        if (hours === 24) {
+            return showMinutes ? `12:${minutes.toString().padStart(2, '0')} AM` : '12 AM';
+        }
+        return format(hours, minutes);
+    } else {
+        const hours = input.getHours();
+        const minutes = input.getMinutes();
+        return format(hours, minutes);
+    }
 };
 
 export const formatDate = (date: Date) => {

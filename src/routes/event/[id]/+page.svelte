@@ -2,7 +2,14 @@
 	import { getAttendees, signinAttendee, updateAttendee } from '$lib/api';
 	import type { Availability, Day } from '$lib/common';
 	import TimeSelector from '$lib/components/TimeSelector.svelte';
+	import { languageStore, startingDayStore, themeStore, timeFormatStore } from '$lib/stores';
+	import { get } from 'svelte/store';
 	import { error, info } from '../../log';
+
+	let startingDay = $state(get(startingDayStore));
+	let lang = $state(get(languageStore));
+	let theme = $state(get(themeStore));
+	let timeFormat = $state(get(timeFormatStore));
 
 	let { data } = $props();
 	let timeSelector: any;
@@ -144,6 +151,30 @@
 			error(`Failed to update data: ${result.message}`);
 		}
 	}
+
+	// Subscribing to settings changes (store)
+	$effect(() => {
+		startingDayStore.subscribe((value) => {
+			startingDay = value;
+		});
+
+		languageStore.subscribe((value) => {
+			lang = value;
+		});
+
+		themeStore.subscribe((value) => {
+			theme = value;
+		});
+
+		timeFormatStore.subscribe((value) => {
+			timeFormat = value;
+		});
+
+		info(`Language: ${$languageStore}`);
+		info(`Theme: ${$themeStore}`);
+		info(`Starting day: ${$startingDayStore}`);
+		info(`Time format: ${$timeFormatStore}`);
+	});
 </script>
 
 <div class="flex flex-col items-start justify-center gap-4 max-sm:container sm:items-center">
@@ -218,6 +249,7 @@
 			availabilityData={availabilities}
 			{rangeStart}
 			{rangeEnd}
+			{timeFormat}
 			{isAuthenticated}
 			{username}
 			{eventId}

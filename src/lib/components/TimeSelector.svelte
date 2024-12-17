@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { updateAttendee } from '$lib/api';
 	import type { Availability, Day } from '$lib/common';
+	import { formatTime } from '$lib/common';
 	import { onMount } from 'svelte';
 	import { error, info } from '../../routes/log';
 
@@ -10,6 +11,7 @@
 		availabilityData: any;
 		rangeStart: number;
 		rangeEnd: number;
+		timeFormat: number;
 		selectedTimes: { day: string; times: string[] }[];
 		isAuthenticated: boolean | null;
 		username: string;
@@ -21,6 +23,7 @@
 		availabilityData,
 		rangeStart,
 		rangeEnd,
+		timeFormat,
 		selectedTimes = $bindable(),
 		isAuthenticated = $bindable(),
 		username = $bindable(),
@@ -257,7 +260,13 @@
 	<div
 		class="flex flex-col items-center gap-1 rounded-lg border-2 border-secondary-500 p-4 text-center"
 	>
-		<h1 class="text-sm">{hoveredTimeslot.startTime}-{hoveredTimeslot.endTime}</h1>
+				<h1 class="text-sm">
+			{#if timeFormat === 12}
+				{formatTime(hoveredTimeslot.startTime)} - {formatTime(hoveredTimeslot.endTime)}
+			{:else}
+				{hoveredTimeslot.startTime} - {hoveredTimeslot.endTime}
+			{/if}
+		</h1>
 		<h1 class="text-sm">
 			{hoveredTimeslot.availability.attending}/{hoveredTimeslot.availability.maxAttendees} available
 		</h1>
@@ -280,12 +289,17 @@
 	<div class="flex flex-row gap-1 max-sm:overflow-x-auto max-sm:overflow-y-hidden">
 		<div class="z-10 mr-2 flex flex-col bg-gray-500 max-sm:sticky max-sm:left-0 max-sm:pr-2">
 			<div class="h-8"></div>
+			<!-- ok look, i don't have any idea how this works either -->
 			{#each Array(Math.ceil(timeSlotTimes.length / 4)) as _, groupIndex}
 				<div class="group flex flex-col !border-transparent">
 					{#each timeSlotTimes.slice(groupIndex * 4, (groupIndex + 1) * 4) as timeSlot, i}
 						<div class="h-3 text-right text-sm" style="margin-bottom: -2px;">
 							{#if i % 4 === 0}
-								{timeSlot}
+								{#if timeFormat === 12}
+									{formatTime(timeSlot, false)}
+								{:else}
+									{timeSlot}
+								{/if}
 							{/if}
 						</div>
 						{#if (i + 1) % 2 === 0 && (i + 1) % 4 !== 0}

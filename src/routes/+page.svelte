@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { addEvent, fetchHelper } from '$lib/api';
-	import { type Day } from '$lib/common';
+	import { formatTime, type Day } from '$lib/common';
 	import Calendar from '$lib/components/Calendar.svelte';
 	import { languageStore, startingDayStore, themeStore, timeFormatStore } from '$lib/stores';
 	import { Slider } from '@skeletonlabs/skeleton-svelte';
@@ -138,11 +138,7 @@
 			<p class="text-2xl">Time range:</p>
 			{#if timeFormat === 12}
 				<p class="text-lg">
-					{timeValue[0] > 12 ? timeValue[0] - 12 : timeValue[0]}:00 {timeValue[0] >= 12
-						? 'PM'
-						: 'AM'} - {timeValue[1] > 12 ? timeValue[1] - 12 : timeValue[1]}:00 {timeValue[1] >= 12
-						? 'PM'
-						: 'AM'}
+					{formatTime(`${timeValue[0]}:00`, false)} - {formatTime(`${timeValue[1]}:00`, false)}
 				</p>
 			{:else}
 				<p class="text-lg">{timeValue[0]}:00 - {timeValue[1]}:00</p>
