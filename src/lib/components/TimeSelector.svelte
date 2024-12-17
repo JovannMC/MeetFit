@@ -32,7 +32,7 @@
 
 	// intentionally unused. this is so tailwind can generate the css for these colours as it doesn't detect if it's dynamically loaded
 	// this would lead to the colours not being generated in the final css file by tailwind
-	const colorVariants = [
+	const colourVariants = [
 		'bg-gray-500',
 		'bg-primary-100',
 		'bg-primary-200',
@@ -166,10 +166,10 @@
 	let isSelecting = false;
 	let isDeselecting = false;
 
-	function handlePointerDown(event: any, day: Day, time: string) {
+	function handlePointerDown(event: Event, day: Day, time: string) {
 		if (!isAuthenticated) return;
 		isDragging = true;
-		const classList = event.target.classList;
+		const classList = (event.target as HTMLElement).classList;
 		if (classList.contains('selected')) {
 			isSelecting = false;
 			isDeselecting = true;
@@ -207,7 +207,7 @@
 	}
 
 	// TODO: click and drag selection box/rectangle like Calendar.svelte
-	function handlePointerEnter(event: any, day: Day, time: string) {
+	function handlePointerEnter(event: Event, day: Day, time: string) {
 		const key = `${day.year}-${day.month + 1}-${day.day}`;
 		const [hours, minutes] = time.split(':').map(Number);
 		const endTimeHours = minutes + 15 >= 60 ? hours + 1 : hours;
@@ -240,7 +240,7 @@
 
 		if (!isAuthenticated) return;
 		if (isDragging) {
-			const classList = event.target.classList;
+			const classList = (event.target as HTMLElement).classList;
 			if (isSelecting) {
 				selectTimeSlot(day, time);
 				classList.add('selected');
@@ -260,7 +260,7 @@
 	<div
 		class="flex flex-col items-center gap-1 rounded-lg border-2 border-secondary-500 p-4 text-center"
 	>
-				<h1 class="text-sm">
+		<h1 class="text-sm">
 			{#if timeFormat === 12}
 				{formatTime(hoveredTimeslot.startTime)} - {formatTime(hoveredTimeslot.endTime)}
 			{:else}

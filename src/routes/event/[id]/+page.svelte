@@ -12,7 +12,7 @@
 	let timeFormat = $state(get(timeFormatStore));
 
 	let { data } = $props();
-	let timeSelector: any;
+	let timeSelector: TimeSelector;
 
 	const event = data.props?.event;
 	const eventId = event?.id ?? '';

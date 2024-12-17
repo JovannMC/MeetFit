@@ -106,12 +106,12 @@
 	let startDrag: Day;
 	let startDragIndex: number;
 
-	function handlePointerDown(event: any) {
+	function handlePointerDown(event: Event) {
 		isDragging = true;
-		startDrag = JSON.parse(event.target.getAttribute('data-day')) as Day;
-		startDragIndex = Array.from(document.querySelectorAll('.day')).indexOf(event.target);
+		startDrag = JSON.parse((event.target as HTMLElement)?.getAttribute('data-day') || '{}') as Day;
+		startDragIndex = Array.from(document.querySelectorAll('.day')).indexOf(event.target as HTMLElement);
 
-		const classList = event.target.classList;
+		const classList = (event.target as HTMLElement).classList;
 		if (classList.contains('!bg-primary-800')) {
 			isSelecting = false;
 			isDeselecting = true;
@@ -139,8 +139,8 @@
 		}
 	}
 
-	function handlePointerEnter(event: any) {
-		const currentIndex = Array.from(document.querySelectorAll('.day')).indexOf(event.target);
+	function handlePointerEnter(event: Event) {
+		const currentIndex = Array.from(document.querySelectorAll('.day')).indexOf(event.target as HTMLElement);
 
 		if (isDragging) {
 			const startRow = Math.floor(startDragIndex / 7);
