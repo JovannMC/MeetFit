@@ -11,6 +11,10 @@ select {
 	@apply bg-tertiary-300;
 }
 
+.highlighted {
+	filter: brightness(1.2);
+}
+
 .fade-in {
 	transition: background-color 0.2s ease;
 }

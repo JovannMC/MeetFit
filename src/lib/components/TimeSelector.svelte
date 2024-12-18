@@ -52,7 +52,6 @@
 		endTime: '0:00',
 		availability: {
 			attending: 0,
-			maxAttendees: 0,
 			names: ['']
 		}
 	});
@@ -165,11 +164,51 @@
 	let isDragging = false;
 	let isSelecting = false;
 	let isDeselecting = false;
+	let isLocked = false;
+	let highlighted: HTMLElement | null = null;
+
+	function handleClick(event: Event, day: Day, time: string) {
+		if (isAuthenticated) return;
+
+		const classList = (event.target as HTMLElement).classList;
+		const isTimeSlot = classList.contains('time-slot');
+
+		if (!isTimeSlot) {
+			highlighted?.classList.remove('highlighted');
+			isLocked = false;
+			return;
+		}
+
+		if (!isLocked) {
+			classList.add('highlighted');
+			highlighted = event.target as HTMLElement;
+
+			const timeSlots = document.querySelectorAll('.time-slot');
+			timeSlots.forEach((slot) => {
+				if (slot !== highlighted) {
+					slot.classList.remove('highlighted');
+				}
+			});
+
+			isLocked = true;
+		} else if (isLocked && highlighted !== event.target) {
+			highlighted?.classList.remove('highlighted');
+			isLocked = false;
+			classList.add('highlighted');
+			highlighted = event.target as HTMLElement;
+			isLocked = true;
+			updateTimeSlot(day, time);
+		} else {
+			highlighted?.classList.remove('highlighted');
+			isLocked = false;
+		}
+	}
 
 	function handlePointerDown(event: Event, day: Day, time: string) {
+		const classList = (event.target as HTMLElement).classList;
+
 		if (!isAuthenticated) return;
 		isDragging = true;
-		const classList = (event.target as HTMLElement).classList;
 		if (classList.contains('selected')) {
 			isSelecting = false;
 			isDeselecting = true;
@@ -208,6 +247,24 @@
 
 	// TODO: click and drag selection box/rectangle like Calendar.svelte
 	function handlePointerEnter(event: Event, day: Day, time: string) {
+		if (!isLocked) {
+			updateTimeSlot(day, time);
+		}
+
+		if (!isAuthenticated) return;
+		if (isDragging) {
+			const classList = (event.target as HTMLElement).classList;
+			if (isSelecting) {
+				selectTimeSlot(day, time);
+				classList.add('selected');
+			} else {
+				deselectTimeSlot(day, time);
+				classList.remove('selected');
+			}
+		}
+	}
+
+	function updateTimeSlot(day: Day, time: string) {
 		const key = `${day.year}-${day.month + 1}-${day.day}`;
 		const [hours, minutes] = time.split(':').map(Number);
 		const endTimeHours = minutes + 15 >= 60 ? hours + 1 : hours;
@@ -218,8 +275,6 @@
 			availabilityData?.filter(({ availability }: { availability?: Availability[] }) =>
 				availability?.some((a) => a.day === key && a.times.includes(time))
 			).length ?? 0;
-
-		const maxAttendees = availabilityData?.length ?? 0;
 
 		const names =
 			availabilityData
@@ -233,22 +288,9 @@
 			endTime,
 			availability: {
 				attending,
-				maxAttendees,
 				names
 			}
 		};
-
-		if (!isAuthenticated) return;
-		if (isDragging) {
-			const classList = (event.target as HTMLElement).classList;
-			if (isSelecting) {
-				selectTimeSlot(day, time);
-				classList.add('selected');
-			} else {
-				deselectTimeSlot(day, time);
-				classList.remove('selected');
-			}
-		}
 	}
 
 	onMount(() => {
@@ -268,7 +310,7 @@
 			{/if}
 		</h1>
 		<h1 class="text-sm">
-			{hoveredTimeslot.availability.attending}/{hoveredTimeslot.availability.maxAttendees} available
+			{hoveredTimeslot.availability.attending}/{availabilityData?.length ?? 0} available
 		</h1>
 		<div class="flex flex-row flex-wrap gap-1">
 			{#each attendees as name}
@@ -331,6 +373,7 @@
 										onpointerdown={(e) => handlePointerDown(e, dayObject, timeSlot)}
 										onpointerup={handlePointerUp}
 										onpointerenter={(e) => handlePointerEnter(e, dayObject, timeSlot)}
+										onclick={(e) => handleClick(e, dayObject, timeSlot)}
 										style="margin-bottom: -2px;"
 									></button>
 								{/key}
