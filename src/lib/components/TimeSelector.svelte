@@ -167,6 +167,15 @@
 	let isLocked = false;
 	let highlighted: HTMLElement | null = null;
 
+	const removeHighlighted = () => {
+		const timeSlots = document.querySelectorAll('.time-slot');
+		timeSlots.forEach((slot) => {
+			slot.classList.remove('highlighted');
+		});
+
+		highlighted = null;
+	};
+
 	function handleClick(event: Event, day: Day, time: string) {
 		if (isAuthenticated) return;
 
@@ -180,17 +189,11 @@
 		}
 
 		if (!isLocked) {
+			removeHighlighted();
 			classList.add('highlighted');
 			highlighted = event.target as HTMLElement;
-
-			const timeSlots = document.querySelectorAll('.time-slot');
-			timeSlots.forEach((slot) => {
-				if (slot !== highlighted) {
-					slot.classList.remove('highlighted');
-				}
-			});
-
 			isLocked = true;
+			updateTimeSlot(day, time);
 		} else if (isLocked && highlighted !== event.target) {
 			highlighted?.classList.remove('highlighted');
 			isLocked = false;
@@ -295,6 +298,10 @@
 
 	onMount(() => {
 		window.addEventListener('pointerup', handlePointerUp);
+		window.addEventListener('pointerdown', () => {
+			removeHighlighted();
+			isLocked = false;
+		});
 	});
 </script>
 
