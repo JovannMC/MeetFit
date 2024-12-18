@@ -176,7 +176,7 @@
 		highlighted = null;
 	};
 
-	function handleClick(event: Event, day: Day, time: string) {
+	function handleSlotClick(event: Event, day: Day, time: string) {
 		if (isAuthenticated) return;
 
 		const classList = (event.target as HTMLElement).classList;
@@ -207,7 +207,7 @@
 		}
 	}
 
-	function handlePointerDown(event: Event, day: Day, time: string) {
+	function handleSlotPointerDown(event: Event, day: Day, time: string) {
 		const classList = (event.target as HTMLElement).classList;
 
 		if (!isAuthenticated) return;
@@ -225,7 +225,7 @@
 		}
 	}
 
-	async function handlePointerUp() {
+	async function handleSlotPointerUp() {
 		isDragging = false;
 		if (isSelecting || isDeselecting) {
 			isSelecting = false;
@@ -249,7 +249,7 @@
 	}
 
 	// TODO: click and drag selection box/rectangle like Calendar.svelte
-	function handlePointerEnter(event: Event, day: Day, time: string) {
+	function handleSlotPointerEnter(event: Event, day: Day, time: string) {
 		if (!isLocked) {
 			updateTimeSlot(day, time);
 		}
@@ -296,8 +296,50 @@
 		};
 	}
 
+	function handlePointerEnterName(name: string) {
+		// Reset all time slots to !bg-gray-500
+		const timeSlots = document.querySelectorAll('.time-slot');
+		timeSlots.forEach((slot) => {
+			slot.classList.add('!bg-gray-500');
+			slot.classList.remove('!bg-primary-500');
+		});
+
+		// Highlight the time slots that the user is attending
+		availabilityData?.forEach(
+			({ name: attendeeName, availability }: { name: string; availability: Availability[] }) => {
+				if (attendeeName === name) {
+					availability.forEach(({ day, times }: { day: string; times: string[] }) => {
+						times.forEach((time) => {
+							const dayElement = document.querySelector(`[data-day="${day}"]`);
+							if (dayElement) {
+								const timeSlotElement = dayElement.querySelector(`[aria-label="${time}"]`);
+								if (timeSlotElement) {
+									timeSlotElement.classList.add('!bg-primary-500');
+									timeSlotElement.classList.remove('!bg-gray-500');
+								}
+							}
+						});
+					});
+				}
+			}
+		);
+	}
+
+	function handlePointerLeaveName() {
+		// Restore the original heatmap data
+		const timeSlots = document.querySelectorAll('.time-slot');
+		timeSlots.forEach((slot) => {
+			slot.classList.remove('!bg-gray-500', '!bg-primary-500');
+			const day = slot.closest('[data-day]')?.getAttribute('data-day');
+			const time = slot.getAttribute('aria-label');
+			if (day && time && heatmapData[day]?.[time]) {
+				slot.classList.add(String(heatmapData[day][time]));
+			}
+		});
+	}
+
 	onMount(() => {
-		window.addEventListener('pointerup', handlePointerUp);
+		window.addEventListener('pointerup', handleSlotPointerUp);
 		window.addEventListener('pointerdown', () => {
 			removeHighlighted();
 			isLocked = false;
@@ -321,16 +363,21 @@
 		</h1>
 		<div class="flex flex-row flex-wrap gap-1">
 			{#each attendees as name}
-				<h1
+				<button
+					type="button"
 					class="fade-in rounded-md border-2 border-primary-500 px-1 text-sm {hoveredTimeslot.availability.names.includes(
 						name
 					)
 						? 'bg-primary-500'
 						: ''}"
 					title={name}
+					onpointerenter={() => handlePointerEnterName(name)}
+					onpointerleave={handlePointerLeaveName}
+					onfocus={() => handlePointerEnterName(name)}
+					onblur={handlePointerLeaveName}
 				>
 					{name.length > 10 ? name.slice(0, 10) + '...' : name}
-				</h1>
+				</button>
 			{/each}
 		</div>
 	</div>
@@ -377,10 +424,12 @@
 											dayObject.year + '-' + (dayObject.month + 1) + '-' + dayObject.day
 										]?.[timeSlot] ?? 'bg-gray-500'}"
 										aria-label={timeSlot}
-										onpointerdown={(e) => handlePointerDown(e, dayObject, timeSlot)}
-										onpointerup={handlePointerUp}
-										onpointerenter={(e) => handlePointerEnter(e, dayObject, timeSlot)}
-										onclick={(e) => handleClick(e, dayObject, timeSlot)}
+										onpointerdown={(e) => handleSlotPointerDown(e, dayObject, timeSlot)}
+										onpointerup={handleSlotPointerUp}
+										onpointerenter={(e) => handleSlotPointerEnter(e, dayObject, timeSlot)}
+										onfocus={(e) => handleSlotPointerEnter(e, dayObject, timeSlot)}
+										onblur={handleSlotPointerUp}
+										onclick={(e) => handleSlotClick(e, dayObject, timeSlot)}
 										style="margin-bottom: -2px;"
 									></button>
 								{/key}
