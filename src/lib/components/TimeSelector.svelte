@@ -173,7 +173,7 @@
 			slot.classList.remove('highlighted');
 		});
 
-		highlighted = null;
+		if (highlighted) highlighted = null;
 	};
 
 	const updateTimeSlot = (day: Day, time: string) => {
@@ -203,20 +203,11 @@
 				names
 			}
 		};
-	}
+	};
 
-	// FIXME fix clicking on same time-slot not deselecting
 	function handleSlotClick(event: Event, day: Day, time: string) {
 		if (isAuthenticated) return;
-
 		const classList = (event.target as HTMLElement).classList;
-		const isTimeSlot = classList.contains('time-slot');
-
-		if (!isTimeSlot) {
-			highlighted?.classList.remove('highlighted');
-			isLocked = false;
-			return;
-		}
 
 		if (!isLocked) {
 			removeHighlighted();
@@ -224,16 +215,15 @@
 			highlighted = event.target as HTMLElement;
 			isLocked = true;
 			updateTimeSlot(day, time);
-		} else if (isLocked && highlighted !== event.target) {
+		} else if (isLocked && highlighted === (event.target as HTMLElement)) {
 			highlighted?.classList.remove('highlighted');
 			isLocked = false;
+		} else {
+			highlighted?.classList.remove('highlighted');
 			classList.add('highlighted');
 			highlighted = event.target as HTMLElement;
 			isLocked = true;
 			updateTimeSlot(day, time);
-		} else {
-			highlighted?.classList.remove('highlighted');
-			isLocked = false;
 		}
 	}
 
@@ -297,6 +287,12 @@
 		}
 	}
 
+	/*
+	 * Attendee name logic
+	 */
+
+	// TODO: add toggling attendees to show on heatmap
+
 	function handlePointerEnterName(name: string) {
 		// Reset all time slots to !bg-gray-500
 		const timeSlots = document.querySelectorAll('.time-slot');
@@ -341,9 +337,12 @@
 
 	onMount(() => {
 		window.addEventListener('pointerup', handleSlotPointerUp);
-		window.addEventListener('pointerdown', () => {
-			removeHighlighted();
-			isLocked = false;
+		window.addEventListener('pointerdown', (event) => {
+			const classList = (event.target as HTMLElement).classList;
+			if (!classList.contains('time-slot')) {
+				removeHighlighted();
+				isLocked = false;
+			}
 		});
 	});
 </script>
