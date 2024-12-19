@@ -205,7 +205,7 @@
 		};
 	};
 
-	function handleSlotClick(event: Event, day: Day, time: string) {
+	function handleClickSlot(event: Event, day: Day, time: string) {
 		if (isAuthenticated) return;
 		const classList = (event.target as HTMLElement).classList;
 
@@ -227,11 +227,12 @@
 		}
 	}
 
-	function handleSlotPointerDown(event: Event, day: Day, time: string) {
+	function handlePointerDownSlot(event: Event, day: Day, time: string) {
 		const classList = (event.target as HTMLElement).classList;
 
 		if (!isAuthenticated) return;
 		isDragging = true;
+		info(`Starting selection from ${day.year}-${day.month + 1}-${day.day} ${time}`);
 		if (classList.contains('selected')) {
 			isSelecting = false;
 			isDeselecting = true;
@@ -245,7 +246,7 @@
 		}
 	}
 
-	async function handleSlotPointerUp() {
+	async function handlePointerUpSlot() {
 		isDragging = false;
 		if (isSelecting || isDeselecting) {
 			isSelecting = false;
@@ -269,7 +270,7 @@
 	}
 
 	// TODO: click and drag selection box/rectangle like Calendar.svelte
-	function handleSlotPointerEnter(event: Event, day: Day, time: string) {
+	function handlePointerEnterSlot(event: Event, day: Day, time: string) {
 		if (!isLocked) {
 			updateTimeSlot(day, time);
 		}
@@ -294,6 +295,8 @@
 	// TODO: add toggling attendees to show on heatmap
 
 	function handlePointerEnterName(name: string) {
+		if (isAuthenticated) return;
+
 		// Reset all time slots to !bg-gray-500
 		const timeSlots = document.querySelectorAll('.time-slot');
 		timeSlots.forEach((slot) => {
@@ -323,6 +326,8 @@
 	}
 
 	function handlePointerLeaveName() {
+		if (isAuthenticated) return;
+
 		// Restore the original heatmap data
 		const timeSlots = document.querySelectorAll('.time-slot');
 		timeSlots.forEach((slot) => {
@@ -336,7 +341,7 @@
 	}
 
 	onMount(() => {
-		window.addEventListener('pointerup', handleSlotPointerUp);
+		window.addEventListener('pointerup', handlePointerUpSlot);
 		window.addEventListener('pointerdown', (event) => {
 			const classList = (event.target as HTMLElement).classList;
 			if (!classList.contains('time-slot')) {
@@ -358,28 +363,30 @@
 				{hoveredTimeslot.startTime} - {hoveredTimeslot.endTime}
 			{/if}
 		</h1>
-		<h1 class="text-sm">
-			{hoveredTimeslot.availability.attending}/{availabilityData?.length ?? 0} available
-		</h1>
-		<div class="flex flex-row flex-wrap gap-1">
-			{#each attendees as name}
-				<button
-					type="button"
-					class="fade-in rounded-md border-2 border-primary-500 px-1 text-sm {hoveredTimeslot.availability.names.includes(
-						name
-					)
-						? 'bg-primary-500'
-						: ''}"
-					title={name}
-					onpointerenter={() => handlePointerEnterName(name)}
-					onpointerleave={handlePointerLeaveName}
-					onfocus={() => handlePointerEnterName(name)}
-					onblur={handlePointerLeaveName}
-				>
-					{name.length > 10 ? name.slice(0, 10) + '...' : name}
-				</button>
-			{/each}
-		</div>
+		{#if !isAuthenticated}
+			<h1 class="text-sm">
+				{hoveredTimeslot.availability.attending}/{availabilityData?.length ?? 0} available
+			</h1>
+			<div class="flex flex-row flex-wrap gap-1">
+				{#each attendees as name}
+					<button
+						type="button"
+						class="fade-in rounded-md border-2 border-primary-500 px-1 text-sm {hoveredTimeslot.availability.names.includes(
+							name
+						)
+							? 'bg-primary-500'
+							: ''}"
+						title={name}
+						onpointerenter={() => handlePointerEnterName(name)}
+						onpointerleave={handlePointerLeaveName}
+						onfocus={() => handlePointerEnterName(name)}
+						onblur={handlePointerLeaveName}
+					>
+						{name.length > 10 ? name.slice(0, 10) + '...' : name}
+					</button>
+				{/each}
+			</div>
+		{/if}
 	</div>
 
 	<div class="flex flex-row gap-1 max-sm:overflow-x-auto max-sm:overflow-y-hidden">
@@ -424,12 +431,11 @@
 											dayObject.year + '-' + (dayObject.month + 1) + '-' + dayObject.day
 										]?.[timeSlot] ?? 'bg-gray-500'}"
 										aria-label={timeSlot}
-										onpointerdown={(e) => handleSlotPointerDown(e, dayObject, timeSlot)}
-										onpointerup={handleSlotPointerUp}
-										onpointerenter={(e) => handleSlotPointerEnter(e, dayObject, timeSlot)}
-										onfocus={(e) => handleSlotPointerEnter(e, dayObject, timeSlot)}
-										onblur={handleSlotPointerUp}
-										onclick={(e) => handleSlotClick(e, dayObject, timeSlot)}
+										onpointerdown={(e) => handlePointerDownSlot(e, dayObject, timeSlot)}
+										onpointerup={handlePointerUpSlot}
+										onpointerenter={(e) => handlePointerEnterSlot(e, dayObject, timeSlot)}
+										onfocus={(e) => handlePointerEnterSlot(e, dayObject, timeSlot)}
+										onclick={(e) => handleClickSlot(e, dayObject, timeSlot)}
 										style="margin-bottom: -2px;"
 									></button>
 								{/key}
