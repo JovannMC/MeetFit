@@ -109,7 +109,9 @@
 	function handlePointerDown(event: Event) {
 		isDragging = true;
 		startDrag = JSON.parse((event.target as HTMLElement)?.getAttribute('data-day') || '{}') as Day;
-		startDragIndex = Array.from(document.querySelectorAll('.day')).indexOf(event.target as HTMLElement);
+		startDragIndex = Array.from(document.querySelectorAll('.day')).indexOf(
+			event.target as HTMLElement
+		);
 
 		const classList = (event.target as HTMLElement).classList;
 		if (classList.contains('!bg-primary-800')) {
@@ -140,7 +142,9 @@
 	}
 
 	function handlePointerEnter(event: Event) {
-		const currentIndex = Array.from(document.querySelectorAll('.day')).indexOf(event.target as HTMLElement);
+		const currentIndex = Array.from(document.querySelectorAll('.day')).indexOf(
+			event.target as HTMLElement
+		);
 
 		if (isDragging) {
 			const startRow = Math.floor(startDragIndex / 7);
@@ -212,8 +216,27 @@
 	};
 </script>
 
+{#snippet renderDays(month: Day[], monthType: string)}
+	{#each month as day}
+		<div
+			class="day h-10 w-10 content-center text-xl sm:h-12 sm:w-12
+			{monthType === 'current' ? (day.isWeekend ? 'bg-secondary-700' : 'bg-secondary-600') : ''}
+			{monthType === 'previous' || monthType === 'next' ? 'bg-secondary-800' : ''}
+			{day.isToday ? 'text-green-400' : ''}
+			{day.isPast ? 'text-gray-400' : ''}"
+			onpointerdown={handlePointerDown}
+			onpointerenter={handlePointerEnter}
+			onpointerup={handlePointerUp}
+			data-day={JSON.stringify(day)}
+		>
+			{day.day}
+		</div>
+	{/each}
+{/snippet}
+
 <!-- TODO: use skeleton's pagination? -->
 <div class="flex flex-col items-center justify-center gap-4 p-6">
+	<!-- Calendar controls -->
 	<div class="flex flex-row items-center gap-3">
 		<button class="h-7 w-7 rounded-lg bg-primary-500 text-white" onclick={() => changeMonth(-1)}
 			>&lt;</button
@@ -223,7 +246,10 @@
 			>&gt;</button
 		>
 	</div>
+
+	<!-- Calendar -->
 	<div class="flex flex-col gap-1 text-center">
+		<!-- Day labels -->
 		<div class="flex flex-row gap-1">
 			{#each daysInWeek as day, i}
 				<div class="w-10 sm:w-12 {i >= 5 ? 'bg-primary-800' : 'bg-primary-500'}">
@@ -231,6 +257,8 @@
 				</div>
 			{/each}
 		</div>
+
+		<!-- Calendar days -->
 		{#if isLoading}
 			<div class="grid grid-cols-7 gap-1">
 				{#each Array(42) as _}
@@ -239,44 +267,9 @@
 			</div>
 		{:else}
 			<div class="grid grid-cols-7 gap-1">
-				{#each calendar.previousMonth as day}
-					<button
-						class="day h-10 w-10 content-center bg-secondary-800 text-xl sm:h-12 sm:w-12
-                        {day.isPast ? 'text-gray-400' : ''}"
-						onpointerdown={handlePointerDown}
-						onpointerenter={handlePointerEnter}
-						onpointerup={handlePointerUp}
-						data-day={JSON.stringify(day)}
-					>
-						{day.day}
-					</button>
-				{/each}
-				{#each calendar.currentMonth as day}
-					<button
-						class="day h-10 w-10 content-center text-xl sm:h-12 sm:w-12
-                            {day.isWeekend ? 'bg-secondary-700' : 'bg-secondary-600'}
-                            {day.isToday ? 'text-green-400' : ''}
-                            {day.isPast ? 'text-gray-400' : ''}"
-						onpointerdown={handlePointerDown}
-						onpointerenter={handlePointerEnter}
-						onpointerup={handlePointerUp}
-						data-day={JSON.stringify(day)}
-					>
-						{day.day}
-					</button>
-				{/each}
-				{#each calendar.nextMonth as day}
-					<button
-						class="day h-10 w-10 content-center bg-secondary-800 text-xl sm:h-12 sm:w-12
-                        {day.isPast ? 'text-gray-400' : ''}"
-						onpointerdown={handlePointerDown}
-						onpointerenter={handlePointerEnter}
-						onpointerup={handlePointerUp}
-						data-day={JSON.stringify(day)}
-					>
-						{day.day}
-					</button>
-				{/each}
+				{@render renderDays(calendar.previousMonth, 'previous')}
+				{@render renderDays(calendar.currentMonth, 'current')}
+				{@render renderDays(calendar.nextMonth, 'next')}
 			</div>
 		{/if}
 	</div>

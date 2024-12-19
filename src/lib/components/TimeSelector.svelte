@@ -176,6 +176,36 @@
 		highlighted = null;
 	};
 
+	const updateTimeSlot = (day: Day, time: string) => {
+		const key = `${day.year}-${day.month + 1}-${day.day}`;
+		const [hours, minutes] = time.split(':').map(Number);
+		const endTimeHours = minutes + 15 >= 60 ? hours + 1 : hours;
+		const endTimeMinutes = (minutes + 15) % 60;
+		const endTime = `${endTimeHours}:${endTimeMinutes < 10 ? '0' : ''}${endTimeMinutes}`;
+
+		const attending =
+			availabilityData?.filter(({ availability }: { availability?: Availability[] }) =>
+				availability?.some((a) => a.day === key && a.times.includes(time))
+			).length ?? 0;
+
+		const names =
+			availabilityData
+				?.filter(({ availability }: { availability?: Availability[] }) =>
+					availability?.some((a) => a.day === key && a.times.includes(time))
+				)
+				.map(({ name }: { name: string }) => name) ?? [];
+
+		hoveredTimeslot = {
+			startTime: time,
+			endTime,
+			availability: {
+				attending,
+				names
+			}
+		};
+	}
+
+	// FIXME fix clicking on same time-slot not deselecting
 	function handleSlotClick(event: Event, day: Day, time: string) {
 		if (isAuthenticated) return;
 
@@ -265,35 +295,6 @@
 				classList.remove('selected');
 			}
 		}
-	}
-
-	function updateTimeSlot(day: Day, time: string) {
-		const key = `${day.year}-${day.month + 1}-${day.day}`;
-		const [hours, minutes] = time.split(':').map(Number);
-		const endTimeHours = minutes + 15 >= 60 ? hours + 1 : hours;
-		const endTimeMinutes = (minutes + 15) % 60;
-		const endTime = `${endTimeHours}:${endTimeMinutes < 10 ? '0' : ''}${endTimeMinutes}`;
-
-		const attending =
-			availabilityData?.filter(({ availability }: { availability?: Availability[] }) =>
-				availability?.some((a) => a.day === key && a.times.includes(time))
-			).length ?? 0;
-
-		const names =
-			availabilityData
-				?.filter(({ availability }: { availability?: Availability[] }) =>
-					availability?.some((a) => a.day === key && a.times.includes(time))
-				)
-				.map(({ name }: { name: string }) => name) ?? [];
-
-		hoveredTimeslot = {
-			startTime: time,
-			endTime,
-			availability: {
-				attending,
-				names
-			}
-		};
 	}
 
 	function handlePointerEnterName(name: string) {
