@@ -22,6 +22,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	return json({ event: newEvent });
 };
 
+// TODO: remove this and API endpoint testing stuff before production
 export const GET: RequestHandler = async () => {
 	// TODO: search events? maybe
 	// or stats?

@@ -218,7 +218,7 @@
 
 {#snippet renderDays(month: Day[], monthType: string)}
 	{#each month as day}
-		<div
+		<button
 			class="day h-10 w-10 content-center text-xl sm:h-12 sm:w-12
 			{monthType === 'current' ? (day.isWeekend ? 'bg-secondary-700' : 'bg-secondary-600') : ''}
 			{monthType === 'previous' || monthType === 'next' ? 'bg-secondary-800' : ''}
@@ -230,7 +230,7 @@
 			data-day={JSON.stringify(day)}
 		>
 			{day.day}
-		</div>
+		</button>
 	{/each}
 {/snippet}
 

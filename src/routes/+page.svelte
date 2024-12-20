@@ -27,9 +27,12 @@
 	let timeValue = $state([6, 18]);
 
 	// TODO: show error msg in UI (notification on bottom right or just show text)
+	// examples for errors: no name, invalid time range (e.g. 6-6), days in the past, other server/unexpected errors, etc
 	let errorMsg = $state('');
 
 	// TODO: use later maybe, for "global" accounts
+	// this will allow users to have multiple events and manage them: editing, deleting events/attendees, etc
+	// learn how to do proper account handling and security pls
 	// users = global accounts
 	// attendees = event accounts
 	let userId = 0;
