@@ -46,14 +46,6 @@
 	];
 
 	let attendees = availabilityData?.map(({ name }: { name: string }) => name) ?? [''];
-	let hoveredTimeslot = $state({
-		startTime: '0:00',
-		endTime: '0:00',
-		availability: {
-			attending: 0,
-			names: ['']
-		}
-	});
 
 	// Calculate amount of time slots
 	const timeSlots = (rangeEnd - rangeStart + 0.25) / 0.25;
@@ -178,6 +170,16 @@
 		if (highlighted) highlighted = null;
 	};
 
+	let hoveredTimeslot = $state({
+		startTime: '0:00',
+		endTime: '0:00',
+		availability: {
+			maxAttendees: 0,
+			attending: 0,
+			names: ['']
+		}
+	});
+
 	const updateTimeSlot = (day: Day, time: string) => {
 		const key = `${day.year}-${day.month + 1}-${day.day}`;
 		const [hours, minutes] = time.split(':').map(Number);
@@ -186,14 +188,22 @@
 		const endTime = `${endTimeHours}:${endTimeMinutes < 10 ? '0' : ''}${endTimeMinutes}`;
 
 		const attending =
-			availabilityData?.filter(({ availability }: { availability?: Availability[] }) =>
-				availability?.some((a) => a.day === key && a.times.includes(time))
+			availabilityData?.filter(
+				({ availability, name }: { availability?: Availability[]; name: string }) =>
+					!excludedNames.includes(name) &&
+					availability?.some((a) => a.day === key && a.times.includes(time))
 			).length ?? 0;
+
+		const maxAttendees =
+			availabilityData?.filter(({ name }: { name: string }) => !excludedNames.includes(name))
+				.length ?? 0;
 
 		const names =
 			availabilityData
-				?.filter(({ availability }: { availability?: Availability[] }) =>
-					availability?.some((a) => a.day === key && a.times.includes(time))
+				?.filter(
+					({ availability, name }: { availability?: Availability[]; name: string }) =>
+						!excludedNames.includes(name) &&
+						availability?.some((a) => a.day === key && a.times.includes(time))
 				)
 				.map(({ name }: { name: string }) => name) ?? [];
 
@@ -201,6 +211,7 @@
 			startTime: time,
 			endTime,
 			availability: {
+				maxAttendees,
 				attending,
 				names
 			}
@@ -273,9 +284,7 @@
 
 	// TODO: click and drag selection box/rectangle like Calendar.svelte
 	function handlePointerEnterSlot(event: Event, day: Day, time: string) {
-		if (!isLocked) {
-			updateTimeSlot(day, time);
-		}
+		if (!isLocked) updateTimeSlot(day, time);
 
 		if (!isAuthenticated) return;
 		if (isDragging) {
@@ -294,7 +303,6 @@
 	 * Attendee name logic
 	 */
 
-	// TODO: add toggling attendees to show on heatmap
 	function handleClickName(event: Event) {
 		if (isAuthenticated) return;
 
@@ -303,10 +311,25 @@
 		if (excludedNames.includes(name)) {
 			excludedNames.splice(excludedNames.indexOf(name), 1);
 			info(`Including ${name} in heatmap`);
+
+			// increment attending count
+			if (hoveredTimeslot.availability.names.includes(name)) {
+				hoveredTimeslot.availability.attending += 1;
+			}
 		} else {
 			excludedNames.push(name);
 			info(`Excluding ${name} from heatmap`);
+
+			// decrement attending count
+			if (hoveredTimeslot.availability.names.includes(name)) {
+				hoveredTimeslot.availability.attending -= 1;
+			}
 		}
+
+		// update max attendees count
+		hoveredTimeslot.availability.maxAttendees = availabilityData.filter(
+			({ name }: { name: string }) => !excludedNames.includes(name)
+		).length;
 
 		// update heatmap
 		loadHeatmapData();
@@ -380,22 +403,22 @@
 	>
 		<h1 class="text-sm">
 			{#if timeFormat === 12}
-				{formatTime(hoveredTimeslot.startTime)} - {formatTime(hoveredTimeslot.endTime)}
+				{@const { startTime, endTime } = hoveredTimeslot}
+				{formatTime(startTime)} - {formatTime(endTime)}
 			{:else}
 				{hoveredTimeslot.startTime} - {hoveredTimeslot.endTime}
 			{/if}
 		</h1>
 		{#if !isAuthenticated}
+			{@const { maxAttendees, attending, names } = hoveredTimeslot.availability}
 			<h1 class="text-sm">
-				{hoveredTimeslot.availability.attending}/{availabilityData?.length ?? 0} available
+				{attending}/{maxAttendees} available
 			</h1>
 			<div class="flex flex-row flex-wrap gap-1">
 				{#each attendees as name}
 					<button
 						type="button"
-						class="fade-in rounded-md border-2 border-primary-500 px-1 text-sm {hoveredTimeslot.availability.names.includes(
-							name
-						)
+						class="fade-in rounded-md border-2 border-primary-500 px-1 text-sm {names.includes(name)
 							? 'bg-primary-500'
 							: ''}
 							{excludedNames.includes(name) ? 'text-gray-400' : ''}"
