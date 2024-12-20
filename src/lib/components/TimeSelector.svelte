@@ -46,7 +46,6 @@
 	];
 
 	let attendees = availabilityData?.map(({ name }: { name: string }) => name) ?? [''];
-	info(`Attendees: ${JSON.stringify(attendees)}`);
 	let hoveredTimeslot = $state({
 		startTime: '0:00',
 		endTime: '0:00',
@@ -86,24 +85,27 @@
 	 */
 
 	let heatmapData: { [key: string]: { [key: string]: number | string } } = $state({});
+	let excludedNames: string[] = $state([]);
 
 	export function loadHeatmapData() {
 		heatmapData = {};
 		if (availabilityData) {
-			availabilityData.forEach(({ availability }: { availability: Availability[] }) => {
-				if (!availability) return;
-				availability.forEach(({ day, times }: { day: string; times: string[] }) => {
-					if (!heatmapData[day]) {
-						heatmapData[day] = {};
-					}
-					times.forEach((time) => {
-						if (!heatmapData[day][time]) {
-							heatmapData[day][time] = 0;
+			availabilityData.forEach(
+				({ name, availability }: { name: string; availability: Availability[] }) => {
+					if (!availability || excludedNames.includes(name)) return;
+					availability.forEach(({ day, times }: { day: string; times: string[] }) => {
+						if (!heatmapData[day]) {
+							heatmapData[day] = {};
 						}
-						heatmapData[day][time] = (heatmapData[day][time] as number) + 1;
+						times.forEach((time) => {
+							if (!heatmapData[day][time]) {
+								heatmapData[day][time] = 0;
+							}
+							heatmapData[day][time] = (heatmapData[day][time] as number) + 1;
+						});
 					});
-				});
-			});
+				}
+			);
 
 			const maxCount = Math.max(
 				...Object.values(heatmapData).flatMap((dayData) =>
@@ -293,6 +295,22 @@
 	 */
 
 	// TODO: add toggling attendees to show on heatmap
+	function handleClickName(event: Event) {
+		if (isAuthenticated) return;
+
+		// exclude the clicked name from the list
+		const name = (event.target as HTMLElement).getAttribute('title') ?? '';
+		if (excludedNames.includes(name)) {
+			excludedNames.splice(excludedNames.indexOf(name), 1);
+			info(`Including ${name} in heatmap`);
+		} else {
+			excludedNames.push(name);
+			info(`Excluding ${name} from heatmap`);
+		}
+
+		// update heatmap
+		loadHeatmapData();
+	}
 
 	function handlePointerEnterName(name: string) {
 		if (isAuthenticated) return;
@@ -350,6 +368,10 @@
 			}
 		});
 	});
+
+	$effect(() => {
+		info(`Attendees: ${JSON.stringify(attendees)}`);
+	});
 </script>
 
 <div class="flex flex-col gap-4 max-sm:container">
@@ -375,10 +397,12 @@
 							name
 						)
 							? 'bg-primary-500'
-							: ''}"
+							: ''}
+							{excludedNames.includes(name) ? 'text-gray-400' : ''}"
 						title={name}
 						onpointerenter={() => handlePointerEnterName(name)}
 						onpointerleave={handlePointerLeaveName}
+						onclick={(e) => handleClickName(e)}
 						onfocus={() => handlePointerEnterName(name)}
 						onblur={handlePointerLeaveName}
 					>
