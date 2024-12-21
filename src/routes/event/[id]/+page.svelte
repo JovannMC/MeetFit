@@ -3,8 +3,13 @@
 	import type { Availability, Day } from '$lib/common';
 	import TimeSelector from '$lib/components/TimeSelector.svelte';
 	import { languageStore, startingDayStore, themeStore, timeFormatStore } from '$lib/stores';
+	import { showError } from '$lib/toast';
+	import type { ToastContext } from '@skeletonlabs/skeleton-svelte';
+	import { getContext } from 'svelte';
 	import { get } from 'svelte/store';
 	import { error, info } from '../../log';
+
+	const toast: ToastContext = getContext('toast');
 
 	let startingDay = $state(get(startingDayStore));
 	let lang = $state(get(languageStore));
@@ -44,7 +49,7 @@
 			info(`Timezone saved successfully for ${username}: ${timezone}`);
 		} else {
 			error(`Failed to save timezone for ${username}: ${result.message}`);
-			errorMsg = result.message;
+			showError(toast, 'Error', `Failed to save timezone: ${result.message}`);
 		}
 	}
 
@@ -54,8 +59,6 @@
 
 	let username = $state('');
 	let isAuthenticated: boolean | null = $state(null);
-	let errorMsg = $state('');
-	let showNameError = $state(false);
 
 	function handleSubmit(event: Event) {
 		event.preventDefault();
@@ -66,18 +69,17 @@
 	}
 
 	async function authenticate(username: string, password: string) {
-		showNameError = false;
 		isAuthenticated = null;
 		if (!username) {
 			error('Username is required');
-			showNameError = true;
+			showError(toast, 'Error', 'Username is required');
 			return;
 		}
 
 		const result = await signinAttendee(eventId, username, password);
 
 		// TODO: return specific error messages (invalid pass, internal server error, etc)
-		if (result) {
+		if (!result.message) {
 			info(`Authenticated successfully as ${result.attendee.name}`);
 			isAuthenticated = true;
 
@@ -123,7 +125,7 @@
 		} else {
 			isAuthenticated = false;
 			error(`Authentication failed: ${result.message}`);
-			errorMsg = result.message;
+			showError(toast, 'Error', `Authentication failed: ${result.message}`);
 		}
 	}
 
@@ -208,10 +210,6 @@
 					>
 				</div>
 			</form>
-
-			{#if isAuthenticated === false}
-				<p class="text-red-500">{errorMsg}</p>
-			{/if}
 		{:else}
 			<div class="flex flex-col items-center gap-4">
 				<h2 class="text-3xl font-bold">Welcome, {username}!</h2>
@@ -219,10 +217,6 @@
 					>Sign out</button
 				>
 			</div>
-		{/if}
-
-		{#if showNameError}
-			<p class="text-red-500">Name is required</p>
 		{/if}
 
 		<div class="flex flex-col items-center gap-2 text-center">

@@ -4,7 +4,9 @@
 	import { formatTime, type Day } from '$lib/common';
 	import Calendar from '$lib/components/Calendar.svelte';
 	import { languageStore, startingDayStore, themeStore, timeFormatStore } from '$lib/stores';
-	import { Slider } from '@skeletonlabs/skeleton-svelte';
+	import { showError } from '$lib/toast';
+	import { Slider, type ToastContext } from '@skeletonlabs/skeleton-svelte';
+	import { getContext, onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import { error, info } from './log';
 
@@ -28,7 +30,8 @@
 
 	// TODO: show error msg in UI (notification on bottom right or just show text)
 	// examples for errors: no name, invalid time range (e.g. 6-6), days in the past, other server/unexpected errors, etc
-	let errorMsg = $state('');
+	//let errorMsg = $state('');
+	const toast: ToastContext = getContext('toast');
 
 	// TODO: use later maybe, for "global" accounts
 	// this will allow users to have multiple events and manage them: editing, deleting events/attendees, etc
@@ -42,6 +45,24 @@
 	});
 
 	async function createEvent() {
+		if (!eventName) {
+			error('Event name is required');
+			showError(toast, 'Error', 'Event name is required');
+			return;
+		}
+
+		if (eventType === 'dates' && selectedDays.length === 0) {
+			error('At least one day must be selected');
+			showError(toast, 'Error', 'At least one day must be selected');
+			return;
+		}
+
+		if (timeValue[0] >= timeValue[1]) {
+			error('Invalid time range');
+			showError(toast, 'Error', 'Start and end times must be different');
+			return;
+		}
+
 		info(`Creating event: ${eventName}`);
 		const result = await addEvent({
 			name: eventName,
@@ -56,7 +77,7 @@
 			goto(`/event/${result.event.id}`);
 		} else {
 			error(`Failed to create event: ${result.message}`);
-			errorMsg = result.message;
+			showError(toast, 'Error', `Failed to create event: ${result.message}`);
 		}
 	}
 
@@ -72,7 +93,7 @@
 	}
 
 	// Subscribing to settings changes (store)
-	$effect(() => {
+	onMount(() => {
 		startingDayStore.subscribe((value) => {
 			startingDay = value;
 		});
@@ -88,7 +109,9 @@
 		timeFormatStore.subscribe((value) => {
 			timeFormat = value;
 		});
+	});
 
+	$effect(() => {
 		info(`Language: ${$languageStore}`);
 		info(`Theme: ${$themeStore}`);
 		info(`Starting day: ${$startingDayStore}`);

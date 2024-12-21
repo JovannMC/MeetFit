@@ -4,6 +4,7 @@
 	import { i18n } from '$lib/i18n';
 	import '$lib/initStores';
 	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
+	import { ToastProvider } from '@skeletonlabs/skeleton-svelte';
 	import '../app.css';
 	let { children } = $props();
 </script>
@@ -34,9 +35,11 @@
 <Header />
 
 <ParaglideJS {i18n}>
-	<div class="p-6">
-		{@render children()}
-	</div>
+	<ToastProvider>
+		<div class="p-6">
+			{@render children()}
+		</div>
+	</ToastProvider>
 </ParaglideJS>
 
 <FloatingSettings />
