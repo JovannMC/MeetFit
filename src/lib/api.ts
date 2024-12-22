@@ -1,49 +1,62 @@
-import { error } from '../routes/log';
-
 export async function fetchHelper(url: string, method: string, body?: object) {
-	try {
-		const options: RequestInit = {
-			method,
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		};
-
-		if (method !== 'GET' && body) {
-			options.body = JSON.stringify(body);
+	const options: RequestInit = {
+		method,
+		headers: {
+			'Content-Type': 'application/json'
 		}
+	};
 
-		const response = await fetch(url, options);
-		const result = await response.json();
-		if (!response.ok) {
-			throw new Error(result.message || 'Unknown error during fetch request');
-		}
-		return result;
-	} catch (err) {
-		error('Fetch error:', err);
-		throw error;
+	if (method !== 'GET' && body) {
+		options.body = JSON.stringify(body);
 	}
+
+	const response = await fetch(url, options);
+	const result = await response.json();
+	if (!response.ok) {
+		throw new Error(result.message || 'Unknown error during fetch request');
+	}
+	return result;
 }
 
 export async function addEvent(body: object) {
-	return fetchHelper('/api/events', 'POST', body);
+	try {
+		return await fetchHelper('/api/events', 'POST', body);
+	} catch (err) {
+		return { message: (err as Error).message || 'Unknown error during addEvent' };
+	}
 }
 
 export async function getEvents() {
-	return fetchHelper('/api/events', 'GET');
+	try {
+		return await fetchHelper('/api/events', 'GET');
+	} catch (err) {
+		return { message: (err as Error).message || 'Unknown error during getEvents' };
+	}
 }
 
 export async function getAttendees(eventId: string) {
-	return fetchHelper(`/api/events/${eventId}/attendees`, 'GET');
+	try {
+		return await fetchHelper(`/api/events/${eventId}/attendees`, 'GET');
+	} catch (err) {
+		return { message: (err as Error).message || 'Unknown error during getAttendees' };
+	}
 }
 
 export async function signinAttendee(eventId: string, username: string, password: string) {
-	return fetchHelper(`/api/events/${eventId}/attendees`, 'POST', {
-		username,
-		password
-	});
+	try {
+		return await fetchHelper(`/api/events/${eventId}/attendees`, 'POST', {
+			username,
+			password
+		});
+	} catch (err) {
+		return { message: (err as Error).message || 'Unknown error during signinAttendee' };
+	}
 }
 
 export async function updateAttendee(eventId: string, username: string, body: object) {
-	return fetchHelper(`/api/events/${eventId}/attendees/${username}`, 'PATCH', body);
+	try {
+		return await fetchHelper(`/api/events/${eventId}/attendees/${username}`, 'PATCH', body);
+	} catch (err) {
+		return { message: (err as Error).message || 'Unknown error during updateAttendee' };
+	}
 }
