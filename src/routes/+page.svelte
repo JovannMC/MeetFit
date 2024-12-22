@@ -4,7 +4,7 @@
 	import { formatTime, type Day } from '$lib/common';
 	import Calendar from '$lib/components/Calendar.svelte';
 	import { languageStore, startingDayStore, themeStore, timeFormatStore } from '$lib/stores';
-	import { showError } from '$lib/toast';
+	import { showError, showSuccess } from '$lib/toast';
 	import { Slider, type ToastContext } from '@skeletonlabs/skeleton-svelte';
 	import { getContext, onMount } from 'svelte';
 	import { get } from 'svelte/store';
@@ -28,9 +28,6 @@
 
 	let timeValue = $state([6, 18]);
 
-	// TODO: show error msg in UI (notification on bottom right or just show text)
-	// examples for errors: no name, invalid time range (e.g. 6-6), days in the past, other server/unexpected errors, etc
-	//let errorMsg = $state('');
 	const toast: ToastContext = getContext('toast');
 
 	// TODO: use later maybe, for "global" accounts
@@ -71,9 +68,10 @@
 			timeRangeEnd: timeValue[1],
 			days: selectedDays
 		});
-
-		if (result) {
-			info('Event created successfully:', JSON.stringify(result));
+		
+		if (!result.message) {
+			info(`Event created successfully: ${result.event.id}`);
+			showSuccess(toast, 'Success', 'Event created successfully, redirecting...');
 			goto(`/event/${result.event.id}`);
 		} else {
 			error(`Failed to create event: ${result.message}`);

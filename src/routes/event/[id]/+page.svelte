@@ -3,7 +3,7 @@
 	import type { Availability, Day } from '$lib/common';
 	import TimeSelector from '$lib/components/TimeSelector.svelte';
 	import { languageStore, startingDayStore, themeStore, timeFormatStore } from '$lib/stores';
-	import { showError } from '$lib/toast';
+	import { showError, showSuccess } from '$lib/toast';
 	import type { ToastContext } from '@skeletonlabs/skeleton-svelte';
 	import { getContext } from 'svelte';
 	import { get } from 'svelte/store';
@@ -45,11 +45,12 @@
 		if (!username || !isAuthenticated) return;
 		const result = await updateAttendee(eventId, username, { timezone });
 
-		if (result) {
-			info(`Timezone saved successfully for ${username}: ${timezone}`);
+		if (!result.message) {
+			info(`Timezone updated to ${timezone}`);
+			showSuccess(toast, 'Success', 'Timezone updated successfully');
 		} else {
-			error(`Failed to save timezone for ${username}: ${result.message}`);
-			showError(toast, 'Error', `Failed to save timezone: ${result.message}`);
+			error(`Failed to update timezone: ${result.message}`);
+			showError(toast, 'Error', `Failed to update timezone: ${result.message}`);
 		}
 	}
 
@@ -78,10 +79,10 @@
 
 		const result = await signinAttendee(eventId, username, password);
 
-		// TODO: return specific error messages (invalid pass, internal server error, etc)
 		if (!result.message) {
 			info(`Authenticated successfully as ${result.attendee.name}`);
 			isAuthenticated = true;
+			showSuccess(toast, 'Success', 'Authenticated successfully');
 
 			// Remove heatmap visualization
 			const timeSlots = document.querySelectorAll('.time-slot');
@@ -141,16 +142,18 @@
 		const timeSlotElements = document.querySelectorAll('.selected');
 		timeSlotElements.forEach((element) => element.classList.remove('selected'));
 
-		await updateData();
+		showSuccess(toast, 'Success', 'Signed out successfully');
+
+		await reloadData();
 	}
 
-	async function updateData() {
+	async function reloadData() {
 		const result = await getAttendees(eventId);
-		if (result) {
-			availabilities = result.attendees ?? [];
-			timeSelector.loadHeatmapData();
+		if (!result.message) {
+			showSuccess(toast, 'Success', 'Reloaded data successfully');
 		} else {
-			error(`Failed to update data: ${result.message}`);
+			error(`Failed to reload data: ${result.message}`);
+			showError(toast, 'Error', `Failed to reload data: ${result.message}`);
 		}
 	}
 

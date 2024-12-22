@@ -2,7 +2,9 @@
 	import { updateAttendee } from '$lib/api';
 	import type { Availability, Day } from '$lib/common';
 	import { formatTime } from '$lib/common';
-	import { onMount } from 'svelte';
+	import { showSuccess } from '$lib/toast';
+	import type { ToastContext } from '@skeletonlabs/skeleton-svelte';
+	import { getContext, onMount } from 'svelte';
 	import { error, info } from '../../routes/log';
 
 	interface Props {
@@ -44,6 +46,8 @@
 		'bg-primary-800',
 		'bg-primary-900'
 	];
+
+	const toast: ToastContext = getContext('toast');
 
 	let attendees = availabilityData?.map(({ name }: { name: string }) => name) ?? [''];
 
@@ -276,6 +280,7 @@
 
 			if (result) {
 				info(`Selected times saved successfully for ${username}: ${JSON.stringify(availability)}`);
+				showSuccess(toast, 'Success', 'Attendance updated successfully');
 			} else {
 				error(`Failed to save selected times for ${username}: ${result.message}`);
 			}
