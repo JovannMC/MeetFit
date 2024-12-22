@@ -28,9 +28,9 @@
 	};
 </script>
 
-<div>
+<div class="z-50">
 	<button
-		class="fixed bottom-5 right-5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-primary-900 text-white shadow-md"
+		class="fixed bottom-5 right-5 z-50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-primary-900 text-white shadow-md"
 		onclick={toggleSettings}
 	>
 		<SettingsIcon classes={showSettings ? 'rotate' : ''} />
@@ -38,7 +38,7 @@
 
 	{#if showSettings}
 		<div
-			class="fixed bottom-20 right-5 flex w-72 flex-col gap-2 rounded-lg border-2 border-primary-500 bg-gray-500 p-5 shadow-md"
+			class="fixed bottom-20 right-5 z-50 flex w-72 flex-col gap-2 rounded-lg border-2 border-primary-500 bg-gray-500 p-5 shadow-md"
 		>
 			<h3 class="text-center text-2xl">Settings</h3>
 			<div class="flex flex-col gap-4">
