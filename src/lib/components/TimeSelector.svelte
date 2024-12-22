@@ -397,7 +397,7 @@
 	});
 </script>
 
-<div class="flex flex-col gap-4 container overflow-y-hidden">
+<div class="container flex flex-col gap-4 overflow-y-hidden">
 	<div
 		class="flex flex-col items-center gap-1 rounded-lg border-2 border-secondary-500 p-4 text-center"
 	>
@@ -436,8 +436,8 @@
 		{/if}
 	</div>
 
-	<div class="flex flex-row gap-1">
-		<div class="z-10 flex flex-col bg-gray-500 max-sm:sticky max-sm:left-0 max-sm:pr-2 sm:mr-2">
+	<div class="flex flex-row gap-1 max-sm:overflow-x-auto max-sm:overflow-y-hidden">
+		<div class="flex flex-col bg-gray-500 sticky left-0 pr-2">
 			<div class="h-8"></div>
 			<!-- ok look, i don't have any idea how this works either -->
 			{#each Array(Math.ceil(timeSlotTimes.length / 4)) as _, groupIndex}
